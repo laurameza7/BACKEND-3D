@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ucc-pasto3d-backend
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/salud
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: IA_PROVEEDOR
+        value: gemini
+      - key: CORS_ORIGENES
+        sync: false
