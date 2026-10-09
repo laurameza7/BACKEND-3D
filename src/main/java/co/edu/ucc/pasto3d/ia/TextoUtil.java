@@ -19,3 +19,5 @@ public final class TextoUtil {
         return sinTildes.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9ñ ]", " ").replaceAll("\\s+", " ").trim();
     }
 }
+
+
