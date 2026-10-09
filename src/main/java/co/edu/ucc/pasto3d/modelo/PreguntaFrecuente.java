@@ -18,3 +18,5 @@ public class PreguntaFrecuente {
     public String getRespuesta() { return respuesta; }
     public String getPalabrasClave() { return palabrasClave; }
 }
+
+
