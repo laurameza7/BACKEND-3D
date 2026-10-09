@@ -79,3 +79,6 @@ public class GeminiProveedorIA implements ProveedorIA {
                 .trim();
     }
 }
+
+
+
