@@ -28,3 +28,6 @@ public class Programa {
     public String getDescripcion() { return descripcion; }
     public Edificio getEdificio() { return edificio; }
 }
+
+
+
