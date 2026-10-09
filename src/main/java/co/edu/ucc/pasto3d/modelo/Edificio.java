@@ -32,3 +32,6 @@ public class Edificio {
     public String getColor() { return color; }
     public String getTipo() { return tipo; }
 }
+
+
+
