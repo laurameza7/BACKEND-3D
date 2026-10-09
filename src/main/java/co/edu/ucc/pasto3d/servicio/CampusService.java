@@ -57,7 +57,7 @@ public class CampusService {
 
     static EdificioDTO aDto(Edificio e) {
         return new EdificioDTO(e.getId(), e.getCodigo(), e.getNombre(), e.getDescripcion(),
-                e.getPosX(), e.getPosZ(), e.getAncho(), e.getProfundidad(), e.getPisos(), e.getColor(), e.getTipo());
+                e.getPosX(), e.getPosZ(), e.getAncho(), e.getProfundidad(), e.getPisos(), e.getSotanos(), e.getColor(), e.getTipo());
     }
 
     static LugarDTO aDto(Lugar l) {

@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS edificio (
     ancho           DOUBLE PRECISION NOT NULL DEFAULT 10,
     profundidad     DOUBLE PRECISION NOT NULL DEFAULT 10,
     pisos           INTEGER      NOT NULL DEFAULT 1,
+    sotanos         INTEGER      NOT NULL DEFAULT 0,  -- pisos subterráneos
     color           VARCHAR(9)   NOT NULL DEFAULT '#cfd8dc',
     tipo            VARCHAR(30)  NOT NULL DEFAULT 'EDIFICIO' -- EDIFICIO, ZONA_VERDE, PARQUEADERO, DEPORTIVO
 );
@@ -22,7 +23,7 @@ CREATE TABLE IF NOT EXISTS lugar (
     nombre          VARCHAR(150) NOT NULL,
     tipo            VARCHAR(40)  NOT NULL,  -- OFICINA, LABORATORIO, AULA, SERVICIO, CLINICA
     edificio_id     INTEGER      NOT NULL REFERENCES edificio(id),
-    piso            INTEGER      NOT NULL DEFAULT 1,
+    piso            INTEGER      NOT NULL DEFAULT 1,  -- negativo = sótano (-1 = sótano 1)
     descripcion     TEXT,
     horario         VARCHAR(150),
     telefono        VARCHAR(60),
@@ -56,6 +57,9 @@ CREATE TABLE IF NOT EXISTS conversacion (
     proveedor       VARCHAR(40)  NOT NULL,
     creado_en       TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Para bases ya creadas antes de agregar sótanos
+ALTER TABLE edificio ADD COLUMN IF NOT EXISTS sotanos INTEGER NOT NULL DEFAULT 0;
 
 CREATE INDEX IF NOT EXISTS idx_lugar_edificio    ON lugar(edificio_id);
 CREATE INDEX IF NOT EXISTS idx_programa_edificio ON programa(edificio_id);

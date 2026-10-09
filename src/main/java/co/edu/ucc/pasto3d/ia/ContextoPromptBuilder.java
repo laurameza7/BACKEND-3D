@@ -2,6 +2,8 @@ package co.edu.ucc.pasto3d.ia;
 
 import co.edu.ucc.pasto3d.dto.Dtos.*;
 
+import static co.edu.ucc.pasto3d.ia.TextoUtil.nombrePiso;
+
 /**
  * Patrón BUILDER: arma paso a paso el texto de instrucciones + conocimiento
  * que se envía al modelo de lenguaje.
@@ -15,7 +17,9 @@ public class ContextoPromptBuilder {
             Respondes en español, de forma amable, clara y breve (máximo 6 frases o una lista corta).
             Escribe en texto plano: NO uses Markdown (nada de asteriscos, # ni negritas). Para listas usa "• " al inicio de cada línea.
             Usa SOLO la información del campus que aparece abajo. Si algo no está, dilo con honestidad y
-            sugiere comunicarse al 602 7370660 o acercarse a Admisiones (Bloque A).
+            sugiere comunicarse al conmutador 602 7370660 (Admisiones, ext. 2312).
+            Si no se indica en qué bloque o piso está una oficina o laboratorio, NO inventes su ubicación:
+            da su extensión telefónica. El campus tiene solo dos edificios: Bloque A y Bloque B.
             Cuando la respuesta tenga un lugar físico, menciona el nombre exacto del bloque (por ejemplo "Bloque A")
             para que el mapa 3D lo pueda resaltar. No inventes precios, fechas ni nombres de personas.
             """).append('\n');
@@ -26,14 +30,15 @@ public class ContextoPromptBuilder {
         sb.append("## Edificios del campus\n");
         for (EdificioDTO e : c.edificios())
             sb.append("- ").append(e.nombre()).append(": ").append(e.descripcion())
-              .append(" (").append(e.pisos()).append(" pisos)\n");
+              .append(" (").append(e.pisos()).append(" pisos")
+              .append(e.sotanos() > 0 ? ", " + e.sotanos() + " sótanos" : "").append(")\n");
         return this;
     }
 
     public ContextoPromptBuilder lugares(ContextoCampus c) {
         sb.append("\n## Oficinas, laboratorios y servicios\n");
         for (LugarDTO l : c.lugares()) {
-            sb.append("- ").append(l.nombre()).append(" — ").append(l.edificio()).append(", piso ").append(l.piso());
+            sb.append("- ").append(l.nombre()).append(" — ").append(l.edificio()).append(", ").append(nombrePiso(l.piso()));
             if (l.descripcion() != null) sb.append(". ").append(l.descripcion());
             if (l.horario() != null) sb.append(" Horario: ").append(l.horario()).append('.');
             if (l.telefono() != null) sb.append(" Tel: ").append(l.telefono()).append('.');
@@ -47,8 +52,9 @@ public class ContextoPromptBuilder {
         sb.append("\n## Programas académicos\n");
         for (ProgramaDTO p : c.programas())
             sb.append("- ").append(p.nombre()).append(" (").append(p.nivel()).append(", ").append(p.modalidad())
-              .append(", ").append(p.duracionSemestres()).append(" semestres, título: ").append(p.titulo())
-              .append(", ").append(p.facultad()).append(", clases en ").append(p.edificio()).append("). ")
+              .append(p.duracionSemestres() != null ? ", " + p.duracionSemestres() + " semestres" : "")
+              .append(", título: ").append(p.titulo()).append(", ").append(p.facultad())
+              .append(p.edificio() != null ? ", clases en " + p.edificio() : "").append("). ")
               .append(p.descripcion()).append('\n');
         return this;
     }

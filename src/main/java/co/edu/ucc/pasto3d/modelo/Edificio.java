@@ -15,6 +15,7 @@ public class Edificio {
     private Double ancho;
     private Double profundidad;
     private Integer pisos;
+    private Integer sotanos;
     private String color;
     private String tipo;
 
@@ -27,6 +28,7 @@ public class Edificio {
     public Double getAncho() { return ancho; }
     public Double getProfundidad() { return profundidad; }
     public Integer getPisos() { return pisos; }
+    public Integer getSotanos() { return sotanos == null ? 0 : sotanos; }
     public String getColor() { return color; }
     public String getTipo() { return tipo; }
 }

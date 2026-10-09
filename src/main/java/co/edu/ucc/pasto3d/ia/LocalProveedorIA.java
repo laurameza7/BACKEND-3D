@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import java.util.Comparator;
 import java.util.stream.Collectors;
 
+import static co.edu.ucc.pasto3d.ia.TextoUtil.nombrePiso;
 import static co.edu.ucc.pasto3d.ia.TextoUtil.normalizar;
 
 /**
@@ -30,7 +31,7 @@ public class LocalProveedorIA implements ProveedorIA {
 
         if (q.matches(".*\\b(programas|carreras|que estudiar|ofrecen|oferta)\\b.*"))
             return "En el campus Pasto se ofrecen estos programas:\n" + c.programas().stream()
-                    .map(p -> "• " + p.nombre() + " (" + p.duracionSemestres() + " semestres) — " + p.edificio())
+                    .map(p -> "• " + p.nombre() + " (" + p.facultad() + ")")
                     .collect(Collectors.joining("\n"));
 
         // ¿Pregunta por un programa puntual?
@@ -38,10 +39,11 @@ public class LocalProveedorIA implements ProveedorIA {
             String nombre = normalizar(p.nombre());
             String clave = nombre.replace("ingenieria de ", "").replace("ingenieria ", "");
             if (q.contains(" " + nombre + " ") || q.contains(" " + clave + " "))
-                return p.nombre() + ": " + p.descripcion() + " Duración: " + p.duracionSemestres()
-                     + " semestres, modalidad " + p.modalidad().toLowerCase() + ". Título: " + p.titulo()
-                     + ". Pertenece a la " + p.facultad() + " y sus clases se dictan principalmente en el "
-                     + p.edificio() + ". Para inscribirte entra a www.ucc.edu.co o acércate a Admisiones (Bloque A).";
+                return p.nombre() + ": " + p.descripcion() + " Modalidad " + p.modalidad().toLowerCase()
+                     + (p.duracionSemestres() != null ? ", " + p.duracionSemestres() + " semestres" : "")
+                     + ". Título: " + p.titulo() + ". Pertenece a la " + p.facultad()
+                     + (p.edificio() != null ? " y sus clases se dictan principalmente en el " + p.edificio() : "")
+                     + ". Para inscribirte entra a www.ucc.edu.co o comunícate con Admisiones (602 7370660 ext. 2312).";
         }
 
         // Mejor pregunta frecuente según palabras clave
@@ -60,7 +62,7 @@ public class LocalProveedorIA implements ProveedorIA {
 
         if (mejorLugar != null && puntaje(q, mejorLugar.nombre()) >= mejorPuntaje) {
             StringBuilder sb = new StringBuilder(mejorLugar.nombre()).append(" queda en el ")
-                    .append(mejorLugar.edificio()).append(", piso ").append(mejorLugar.piso()).append('.');
+                    .append(mejorLugar.edificio()).append(", ").append(nombrePiso(mejorLugar.piso())).append('.');
             if (mejorLugar.descripcion() != null)
                 sb.append(' ').append(mejorLugar.descripcion()).append(mejorLugar.descripcion().endsWith(".") ? "" : ".");
             if (mejorLugar.horario() != null) sb.append(" Horario: ").append(mejorLugar.horario()).append('.');
@@ -70,11 +72,11 @@ public class LocalProveedorIA implements ProveedorIA {
         if (mejorFaq != null) return mejorFaq.respuesta();
 
         for (EdificioDTO e : c.edificios())
-            if (puntaje(q, e.nombre()) >= 2 || q.contains(" " + normalizar(e.codigo()) + " "))
+            if (puntaje(q, e.nombre()) >= 2 || q.contains(" " + normalizar(e.nombre()) + " "))
                 return e.nombre() + ": " + e.descripcion();
 
-        return "No encontré esa información en mi base de conocimiento. Puedes llamar al 602 7370660 "
-             + "o acercarte a Admisiones en el Bloque A, piso 1.";
+        return "No encontré esa información en mi base de conocimiento. Puedes llamar al conmutador "
+             + "602 7370660 (Admisiones, ext. 2312).";
     }
 
     /** Cuenta las palabras significativas (4+ letras) de 'texto' que aparecen en la pregunta. */

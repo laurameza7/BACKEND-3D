@@ -25,9 +25,21 @@ class Pasto3dApplicationTests {
 
     @Test
     void elAsistenteLocalRespondeSobreUnPrograma() {
-        RespuestaDTO r = asistente.preguntar("¿Qué es medicina y dónde estudian?");
-        assertThat(r.respuesta()).contains("Medicina");
+        RespuestaDTO r = asistente.preguntar("¿Qué es medicina?");
+        assertThat(r.respuesta()).contains("Medicina").doesNotContain("null");
+    }
+
+    @Test
+    void elAsistenteLocalUbicaLaBibliotecaEnElBloqueA() {
+        RespuestaDTO r = asistente.preguntar("¿Dónde queda la biblioteca?");
+        assertThat(r.respuesta()).contains("Bloque A");
         assertThat(r.edificioId()).isNotNull();
+    }
+
+    @Test
+    void elCampusTieneDosBloquesConSotanos() {
+        assertThat(campus.edificios()).filteredOn(e -> e.tipo().equals("EDIFICIO")).hasSize(2)
+                .allMatch(e -> e.sotanos() == 2);
     }
 
     @Test
