@@ -8,3 +8,4 @@ import java.util.List;
 public interface LugarRepositorio extends JpaRepository<Lugar, Integer> {
     List<Lugar> findByEdificioIdOrderByPisoAsc(Integer edificioId);
 }
+
