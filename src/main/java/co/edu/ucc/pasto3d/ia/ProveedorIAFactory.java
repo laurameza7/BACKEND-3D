@@ -30,3 +30,6 @@ public class ProveedorIAFactory {
         return List.of(local);
     }
 }
+
+
+
