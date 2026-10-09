@@ -100,3 +100,6 @@ public class LocalProveedorIA implements ProveedorIA {
         return palabra.length() > 6 ? palabra.substring(0, palabra.length() - 2) : palabra;
     }
 }
+
+
+
