@@ -28,3 +28,5 @@ public class Conversacion {
     public String getProveedor() { return proveedor; }
     public LocalDateTime getCreadoEn() { return creadoEn; }
 }
+
+
