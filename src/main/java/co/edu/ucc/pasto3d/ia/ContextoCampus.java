@@ -8,3 +8,5 @@ public record ContextoCampus(List<EdificioDTO> edificios,
                              List<LugarDTO> lugares,
                              List<ProgramaDTO> programas,
                              List<PreguntaFrecuenteDTO> preguntas) { }
+
+
