@@ -28,3 +28,5 @@ public class Lugar {
     public String getTelefono() { return telefono; }
     public String getCorreo() { return correo; }
 }
+
+
