@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UCC Pasto 3D · Backend</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root { --azul:#004d99; --suave:#e8f0fa; --texto:#1d2733; --t2:#5b6878; --borde:#e3e8ef; --ok:#2fb36d; --err:#e5484d; }
+  * { box-sizing:border-box; }
+  body { margin:0; font-family:"Plus Jakarta Sans",system-ui,sans-serif; color:var(--texto); background:#f4f7fb; }
+  header { background:var(--azul); color:#fff; padding:28px 16px; }
+  .cont { max-width:1040px; margin:0 auto; padding:0 16px; }
+  header .cont { display:flex; gap:16px; align-items:center; flex-wrap:wrap; }
+  .logo { width:52px; height:52px; border-radius:14px; background:#fff; color:var(--azul); display:grid; place-items:center; font-weight:700; }
+  h1 { margin:0; font-size:24px; } header p { margin:4px 0 0; opacity:.85; font-size:14px; }
+  .estado { margin-left:auto; background:rgba(255,255,255,.15); padding:8px 14px; border-radius:999px; font-size:14px; display:flex; gap:8px; align-items:center; }
+  .punto { width:10px; height:10px; border-radius:50%; background:#f0b429; } .punto.ok { background:var(--ok); } .punto.err { background:var(--err); }
+  main { padding:24px 0 48px; }
+  h2 { font-size:15px; text-transform:uppercase; letter-spacing:.05em; color:var(--t2); margin:28px 0 12px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px; }
+  .card { background:#fff; border:1px solid var(--borde); border-radius:14px; padding:16px; }
+  .num { font-size:30px; font-weight:700; color:var(--azul); } .lbl { color:var(--t2); font-size:13px; }
+  table { width:100%; border-collapse:collapse; background:#fff; border:1px solid var(--borde); border-radius:14px; overflow:hidden; font-size:14px; }
+  th, td { text-align:left; padding:10px 14px; border-bottom:1px solid var(--borde); vertical-align:top; }
+  th { background:var(--suave); font-size:12px; text-transform:uppercase; color:var(--t2); }
+  tr:last-child td { border-bottom:none; }
+  code { background:var(--suave); padding:2px 6px; border-radius:6px; font-size:13px; }
+  .met { font-weight:700; font-size:12px; padding:2px 8px; border-radius:6px; color:#fff; } .get { background:var(--ok); } .post { background:#e07a5f; }
+  a { color:var(--azul); }
+  .chat { display:flex; gap:8px; flex-wrap:wrap; }
+  .chat input { flex:1; min-width:220px; padding:12px; border:1px solid var(--borde); border-radius:10px; font:inherit; }
+  .chat button { padding:12px 18px; border:none; border-radius:10px; background:var(--azul); color:#fff; font:inherit; font-weight:600; cursor:pointer; }
+  .resp { margin-top:12px; white-space:pre-wrap; line-height:1.5; }
+  .tag { display:inline-block; font-size:12px; padding:3px 10px; border-radius:999px; background:var(--suave); color:var(--azul); font-weight:600; margin-top:8px; }
+  .arq { display:flex; align-items:center; gap:8px; flex-wrap:wrap; font-size:14px; }
+  .caja { background:#fff; border:1px solid var(--borde); border-radius:10px; padding:10px 14px; } .caja b { display:block; }
+  .flecha { color:var(--t2); }
+  footer { color:var(--t2); font-size:13px; text-align:center; padding-bottom:32px; }
+</style>
+</head>
+<body>
+<header><div class="cont">
+  <div class="logo">UCC</div>
+  <div><h1>UCC Pasto 3D · Backend</h1><p>API REST en Java 21 + Spring Boot 3 · Patrones de Software</p></div>
+  <div class="estado"><span id="punto" class="punto"></span><span id="estado">Verificando…</span></div>
+</div></header>
+
+<main class="cont">
+  <h2>Arquitectura desplegada</h2>
+  <div class="arq">
+    <div class="caja"><b>Frontend</b>Vercel · Three.js</div><span class="flecha">→ HTTP/JSON →</span>
+    <div class="caja"><b>Backend (este)</b>Render · Java Spring Boot</div><span class="flecha">→ SQL →</span>
+    <div class="caja"><b>Base de datos</b>Neon · PostgreSQL</div><span class="flecha">+ HTTPS →</span>
+    <div class="caja"><b>IA</b>Google Gemini</div>
+  </div>
+
+  <h2>Datos leídos en vivo desde la base de datos</h2>
+  <div class="grid">
+    <div class="card"><div class="num" id="n-edificios">–</div><div class="lbl">Edificios / bloques</div></div>
+    <div class="card"><div class="num" id="n-lugares">–</div><div class="lbl">Oficinas, labs y servicios</div></div>
+    <div class="card"><div class="num" id="n-programas">–</div><div class="lbl">Programas académicos</div></div>
+    <div class="card"><div class="num" id="n-preguntas">–</div><div class="lbl">Preguntas frecuentes</div></div>
+  </div>
+
+  <h2>Probar el asistente con IA (Coopi)</h2>
+  <div class="card">
+    <form class="chat" id="f"><input id="q" value="¿Dónde pago la matrícula?" maxlength="500"><button>Preguntar</button></form>
+    <div class="resp" id="r"></div>
+  </div>
+
+  <h2>Endpoints</h2>
+  <table>
+    <tr><th>Método</th><th>Ruta</th><th>Descripción</th></tr>
+    <tr><td><span class="met get">GET</span></td><td><a href="/api/salud"><code>/api/salud</code></a></td><td>Estado del servicio (Hello World)</td></tr>
+    <tr><td><span class="met get">GET</span></td><td><a href="/api/edificios"><code>/api/edificios</code></a></td><td>Bloques del campus con su posición en el mapa 3D</td></tr>
+    <tr><td><span class="met get">GET</span></td><td><a href="/api/edificios/2/lugares"><code>/api/edificios/{id}/lugares</code></a></td><td>Oficinas y laboratorios de un bloque</td></tr>
+    <tr><td><span class="met get">GET</span></td><td><a href="/api/lugares"><code>/api/lugares</code></a></td><td>Todos los lugares</td></tr>
+    <tr><td><span class="met get">GET</span></td><td><a href="/api/programas"><code>/api/programas</code></a></td><td>Programas académicos</td></tr>
+    <tr><td><span class="met get">GET</span></td><td><a href="/api/preguntas-frecuentes"><code>/api/preguntas-frecuentes</code></a></td><td>Preguntas frecuentes</td></tr>
+    <tr><td><span class="met post">POST</span></td><td><code>/api/asistente/preguntar</code></td><td>Pregunta a la IA. Cuerpo: <code>{"pregunta":"..."}</code></td></tr>
+  </table>
+
+  <h2>Patrones de software implementados</h2>
+  <table>
+    <tr><th>Patrón</th><th>Tipo</th><th>Dónde</th></tr>
+    <tr><td><b>Strategy</b></td><td>Comportamiento</td><td><code>ProveedorIA</code> con <code>GeminiProveedorIA</code> y <code>LocalProveedorIA</code></td></tr>
+    <tr><td><b>Factory</b></td><td>Creacional</td><td><code>ProveedorIAFactory</code> elige la estrategia de IA según configuración</td></tr>
+    <tr><td><b>Facade</b></td><td>Estructural</td><td><code>AsistenteFacade.preguntar()</code> oculta contexto, IA, respaldo y registro</td></tr>
+    <tr><td><b>Adapter</b></td><td>Estructural</td><td><code>GeminiProveedorIA</code> adapta la API REST de Gemini a <code>ProveedorIA</code></td></tr>
+    <tr><td><b>Builder</b></td><td>Creacional</td><td><code>ContextoPromptBuilder</code> arma el prompt paso a paso</td></tr>
+    <tr><td>Repository · DTO · Singleton/DI · Chain of Responsibility · MVC</td><td>Complementarios</td><td><code>repositorio/*</code>, <code>dto/Dtos</code>, beans de Spring, cadena Gemini → Local, <code>controlador/*</code></td></tr>
+  </table>
+
+  <h2>Enlaces del proyecto</h2>
+  <div class="grid">
+    <div class="card"><b>Aplicación</b><br><a href="https://ucc-pasto3d.vercel.app" target="_blank">ucc-pasto3d.vercel.app</a></div>
+    <div class="card"><b>Repo frontend</b><br><a href="https://github.com/laurameza7/FRONTEND-3D" target="_blank">FRONTEND-3D</a></div>
+    <div class="card"><b>Repo backend</b><br><a href="https://github.com/laurameza7/BACKEND-3D" target="_blank">BACKEND-3D</a></div>
+    <div class="card"><b>Repo base de datos</b><br><a href="https://github.com/laurameza7/BASE-DATOS-3D-" target="_blank">BASE-DATOS-3D-</a></div>
+  </div>
+</main>
+<footer>Universidad Cooperativa de Colombia · Campus Pasto · Patrones de Software</footer>
+
+<script>
+const $ = id => document.getElementById(id);
+async function json(url, op) { const r = await fetch(url, op); if (!r.ok) throw new Error(r.status); return r.json(); }
+
+json('/api/salud').then(s => { $('punto').className = 'punto ok'; $('estado').textContent = 'En línea · ' + s.mensaje; })
+  .catch(() => { $('punto').className = 'punto err'; $('estado').textContent = 'Sin conexión'; });
+
+[['edificios','/api/edificios'],['lugares','/api/lugares'],['programas','/api/programas'],['preguntas','/api/preguntas-frecuentes']]
+  .forEach(([k,u]) => json(u).then(d => $('n-' + k).textContent = d.length).catch(() => $('n-' + k).textContent = '×'));
+
+$('f').addEventListener('submit', async e => {
+  e.preventDefault();
+  const pregunta = $('q').value.trim(); if (!pregunta) return;
+  $('r').textContent = 'Coopi está pensando…';
+  try {
+    const d = await json('/api/asistente/preguntar', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ pregunta }) });
+    $('r').innerHTML = '';
+    $('r').append(d.respuesta);
+    const t = document.createElement('div'); t.className = 'tag';
+    t.textContent = d.proveedor === 'gemini' ? 'Respondido por Google Gemini (IA)' : 'Respondido por el asistente local (respaldo)';
+    $('r').append(document.createElement('br'), t);
+  } catch { $('r').textContent = 'No se pudo consultar el asistente.'; }
+});
+</script>
+</body>
+</html>

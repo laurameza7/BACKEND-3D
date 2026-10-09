@@ -9,7 +9,7 @@ import java.util.Map;
 @RestController
 public class SaludController {
 
-    @GetMapping({"/", "/api/salud"})
+    @GetMapping("/api/salud")
     public Map<String, Object> salud() {
         return Map.of(
                 "mensaje", "Hello World desde el backend de UCC Pasto 3D",
