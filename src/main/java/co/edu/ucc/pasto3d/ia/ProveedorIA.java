@@ -9,3 +9,7 @@ public interface ProveedorIA {
     boolean disponible();
     String responder(String pregunta, ContextoCampus contexto);
 }
+
+
+
+
