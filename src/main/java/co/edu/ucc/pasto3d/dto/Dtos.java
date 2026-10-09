@@ -25,3 +25,6 @@ public final class Dtos {
     /** edificioId: si la respuesta menciona un bloque, el frontend lo resalta en el mapa 3D. */
     public record RespuestaDTO(String respuesta, String proveedor, Integer edificioId) { }
 }
+
+
+
