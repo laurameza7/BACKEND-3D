@@ -6,3 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 /** Patrón Repository: abstrae el acceso a datos de Conversacion. */
 public interface ConversacionRepositorio extends JpaRepository<Conversacion, Integer> {
 }
+
+
