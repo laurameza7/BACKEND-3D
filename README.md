@@ -42,7 +42,7 @@ Cooperativa de Colombia y su asistente con inteligencia artificial (**Coopi**).
 | `DB_USER` | `neondb_owner` |
 | `DB_PASSWORD` | `********` |
 | `GEMINI_API_KEY` | clave de https://aistudio.google.com/apikey |
-| `GEMINI_MODELO` | `gemini-2.5-flash` (opcional) |
+| `GEMINI_MODELO` | `gemini-3.5-flash` (opcional) |
 | `IA_PROVEEDOR` | `gemini` o `local` |
 | `CORS_ORIGENES` | `https://ucc-pasto3d.vercel.app` |
 

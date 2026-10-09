@@ -22,7 +22,7 @@ public class GeminiProveedorIA implements ProveedorIA {
     private final RestClient http;
 
     public GeminiProveedorIA(@Value("${ia.gemini.api-key:}") String apiKey,
-                             @Value("${ia.gemini.modelo:gemini-2.5-flash}") String modelo) {
+                             @Value("${ia.gemini.modelo:gemini-3.5-flash}") String modelo) {
         this.apiKey = apiKey;
         this.modelo = modelo;
         SimpleClientHttpRequestFactory f = new SimpleClientHttpRequestFactory();
