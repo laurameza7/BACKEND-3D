@@ -27,6 +27,8 @@ public class CampusController {
     @GetMapping("/programas")
     public List<ProgramaDTO> programas() { return campus.programas(); }
 
+
+    
     @GetMapping("/preguntas-frecuentes")
     public List<PreguntaFrecuenteDTO> preguntasFrecuentes() { return campus.preguntasFrecuentes(); }
 }
