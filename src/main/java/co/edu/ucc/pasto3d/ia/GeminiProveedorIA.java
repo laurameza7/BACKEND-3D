@@ -51,7 +51,7 @@ public class GeminiProveedorIA implements ProveedorIA {
         Map<String, Object> cuerpo = Map.of(
                 "systemInstruction", Map.of("parts", List.of(Map.of("text", sistema))),
                 "contents", List.of(Map.of("role", "user", "parts", List.of(Map.of("text", pregunta)))),
-                "generationConfig", Map.of("temperature", 0.3, "maxOutputTokens", 800)
+                "generationConfig", Map.of("temperature", 0.3, "maxOutputTokens", 4096)
         );
 
         JsonNode r = http.post()
@@ -67,6 +67,15 @@ public class GeminiProveedorIA implements ProveedorIA {
             for (JsonNode parte : r.path("candidates").path(0).path("content").path("parts"))
                 texto.append(parte.path("text").asText(""));
         if (texto.isEmpty()) throw new IllegalStateException("Gemini no devolvió texto");
-        return texto.toString().trim();
+        return limpiarMarkdown(texto.toString());
+    }
+
+    /** El chat muestra texto plano: quita negritas, títulos y viñetas de Markdown. */
+    static String limpiarMarkdown(String t) {
+        return t.replace("**", "")
+                .replaceAll("(?m)^#{1,6}[ \\t]*", "")
+                .replaceAll("(?m)^[ \\t]*[*-][ \\t]+", "• ")
+                .replaceAll("\\n{3,}", "\n\n")
+                .trim();
     }
 }
