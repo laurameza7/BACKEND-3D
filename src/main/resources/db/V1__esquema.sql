@@ -63,3 +63,5 @@ ALTER TABLE edificio ADD COLUMN IF NOT EXISTS sotanos INTEGER NOT NULL DEFAULT 0
 
 CREATE INDEX IF NOT EXISTS idx_lugar_edificio    ON lugar(edificio_id);
 CREATE INDEX IF NOT EXISTS idx_programa_edificio ON programa(edificio_id);
+
+
