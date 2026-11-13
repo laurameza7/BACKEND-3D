@@ -18,9 +18,11 @@ public final class Dtos {
     public record PreguntaFrecuenteDTO(Integer id, String categoria, String pregunta, String respuesta,
                                        String palabrasClave) { }
 
+    /** programaId (opcional): el programa que el usuario está viendo, para que Coopi responda sobre él. */
     public record PreguntaDTO(
             @jakarta.validation.constraints.NotBlank
-            @jakarta.validation.constraints.Size(max = 500) String pregunta) { }
+            @jakarta.validation.constraints.Size(max = 500) String pregunta,
+            Integer programaId) { }
 
     /* ----- Usuarios ----- */
     public record RegistroDTO(
@@ -35,8 +37,23 @@ public final class Dtos {
 
     public record SesionDTO(String token, Integer id, String nombre, String correo, String rol) { }
 
+    /**
+     * Acción que el frontend debe ejecutar después de mostrar la respuesta (patrón COMMAND):
+     * SALUDO, VER_PROGRAMAS, IR_PROGRAMA, IR_LUGAR o IR_EDIFICIO.
+     */
+    public record AccionDTO(String tipo, Integer programaId, Integer lugarId, Integer edificioId,
+                            Integer piso, String etiqueta) {
+        public static AccionDTO de(String tipo) { return new AccionDTO(tipo, null, null, null, null, null); }
+    }
+
     /** edificioId: si la respuesta menciona un bloque, el frontend lo resalta en el mapa 3D. */
-    public record RespuestaDTO(String respuesta, String proveedor, Integer edificioId) { }
+    public record RespuestaDTO(String respuesta, String proveedor, Integer edificioId, AccionDTO accion) {
+        public RespuestaDTO(String respuesta, String proveedor, Integer edificioId) {
+            this(respuesta, proveedor, edificioId, null);
+        }
+    }
+
+    public record MensajeHistorialDTO(String pregunta, String respuesta, String fecha) { }
 }
 
 
