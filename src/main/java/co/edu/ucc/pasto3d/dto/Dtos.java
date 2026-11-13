@@ -22,6 +22,19 @@ public final class Dtos {
             @jakarta.validation.constraints.NotBlank
             @jakarta.validation.constraints.Size(max = 500) String pregunta) { }
 
+    /* ----- Usuarios ----- */
+    public record RegistroDTO(
+            @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 80) String nombre,
+            @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 120) String correo,
+            /** SHA-256 de la contraseña calculado en el navegador (nunca la contraseña). */
+            @jakarta.validation.constraints.NotBlank String huella) { }
+
+    public record IngresoDTO(
+            @jakarta.validation.constraints.NotBlank String correo,
+            @jakarta.validation.constraints.NotBlank String huella) { }
+
+    public record SesionDTO(String token, Integer id, String nombre, String correo, String rol) { }
+
     /** edificioId: si la respuesta menciona un bloque, el frontend lo resalta en el mapa 3D. */
     public record RespuestaDTO(String respuesta, String proveedor, Integer edificioId) { }
 }

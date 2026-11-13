@@ -13,7 +13,7 @@
 
     <groupId>co.edu.ucc</groupId>
     <artifactId>ucc-pasto3d-backend</artifactId>
-    <version>0.7.0</version>
+    <version>0.8.0</version>
     <name>UCC Pasto 3D - Backend</name>
     <description>API REST en Java para el mapa 3D y el asistente con IA del campus Pasto</description>
 
@@ -37,6 +37,11 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+        <!-- Solo el módulo de cifrado (BCrypt), sin el resto de Spring Security -->
+        <dependency>
+            <groupId>org.springframework.security</groupId>
+            <artifactId>spring-security-crypto</artifactId>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
