@@ -27,6 +27,13 @@ public class CampusController {
     @GetMapping("/programas")
     public List<ProgramaDTO> programas() { return campus.programas(); }
 
+    @GetMapping("/programas/{id}")
+    public ProgramaDTO programa(@PathVariable Integer id) {
+        return campus.programas().stream().filter(p -> p.id().equals(id)).findFirst()
+                .orElseThrow(() -> new org.springframework.web.server.ResponseStatusException(
+                        org.springframework.http.HttpStatus.NOT_FOUND, "No existe el programa " + id));
+    }
+
 
     
     @GetMapping("/preguntas-frecuentes")
