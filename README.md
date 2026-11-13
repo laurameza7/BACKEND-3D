@@ -16,8 +16,36 @@ Cooperativa de Colombia y su asistente con inteligencia artificial (**Coopi**).
 | GET | `/api/edificios/{id}/lugares` | Oficinas, laboratorios y servicios de un bloque |
 | GET | `/api/lugares` | Todos los lugares |
 | GET | `/api/programas` | Programas académicos |
+| GET | `/api/programas/{id}` | Un programa |
 | GET | `/api/preguntas-frecuentes` | Preguntas frecuentes |
-| POST | `/api/asistente/preguntar` | `{"pregunta": "..."}` → `{"respuesta","proveedor","edificioId"}` |
+| POST | `/api/auth/registro` | `{"nombre","correo","huella"}` → sesión con token |
+| POST | `/api/auth/ingresar` | `{"correo","huella"}` → sesión con token |
+| POST | `/api/auth/invitado` | Sesión de invitado (sin registro) |
+| GET | `/api/auth/yo` | 🔒 Quién es el dueño del token |
+| GET | `/api/asistente/saludo` | 🔒 "¡Hola! ¿Cómo estás? ¿En qué te puedo ayudar hoy?" |
+| POST | `/api/asistente/preguntar` | 🔒 `{"pregunta","programaId"?}` → `{"respuesta","proveedor","edificioId","accion"}` |
+| GET | `/api/asistente/historial` | 🔒 Últimas 20 preguntas del usuario registrado |
+
+🔒 = requiere la cabecera `Authorization: Bearer <token>` (usuario registrado o invitado).
+
+### Contraseñas
+- El navegador calcula **SHA-256** de la contraseña (máx. 30 caracteres) y solo envía esa *huella* de 64 caracteres.
+- El backend la vuelve a cifrar con **BCrypt** (sal aleatoria) y guarda únicamente ese resultado en `usuario.hash_clave`.
+- La contraseña original nunca viaja por la red, nunca se guarda y no se puede recuperar.
+- La sesión es un token firmado con **HMAC-SHA256** (`TokenServicio`) que vence a las 12 horas.
+
+### Acciones de Coopi
+Antes de llamar a la IA, una **cadena de intenciones** revisa el mensaje:
+
+| Intención | Ejemplo | `accion.tipo` |
+|---|---|---|
+| Saludo | "Hola", "Ey Coopi" | `SALUDO` |
+| Lista de programas | "¿Qué programas hay?" | `VER_PROGRAMAS` |
+| Ir a un programa | "Llévame al programa de Ingeniería de Software" | `IR_PROGRAMA` |
+| Ir a un lugar | "Quiero ver el restaurante" → Cafetería | `IR_LUGAR` |
+| Ir a un bloque | "Llévame al Bloque A" | `IR_EDIFICIO` |
+
+Si ninguna aplica, responde la IA (Gemini → respaldo local) con la información de la base de datos.
 
 ## Patrones de software implementados
 
@@ -32,6 +60,9 @@ Cooperativa de Colombia y su asistente con inteligencia artificial (**Coopi**).
 | + | DTO | `dto/Dtos` (records que viajan al frontend) |
 | + | Singleton / Inyección de dependencias | Todos los `@Service`, `@Component` son instancias únicas manejadas por Spring |
 | + | Chain of Responsibility (respaldo) | `AsistenteFacade` recorre la cadena Gemini → Local hasta que uno responde |
+| + | Chain of Responsibility (intenciones) | `intencion/*`: Saludo → Programas → Lugares → IA |
+| + | Command | `AccionDTO`: el backend envía la acción y el frontend la ejecuta |
+| + | Interceptor | `seguridad/AutenticacionInterceptor` valida el token antes de los controladores |
 | + | MVC | `controlador/*` |
 
 ## Variables de entorno
@@ -45,6 +76,7 @@ Cooperativa de Colombia y su asistente con inteligencia artificial (**Coopi**).
 | `GEMINI_MODELO` | `gemini-3.5-flash` (opcional) |
 | `IA_PROVEEDOR` | `gemini` o `local` |
 | `CORS_ORIGENES` | `https://ucc-pasto3d.vercel.app` |
+| `APP_SECRETO` | texto largo y aleatorio para firmar los tokens de sesión |
 
 ## Correr en el computador (sin PostgreSQL)
 
