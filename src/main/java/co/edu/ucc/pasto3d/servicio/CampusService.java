@@ -67,9 +67,13 @@ public class CampusService {
 
     static ProgramaDTO aDto(Programa p) {
         Edificio e = p.getEdificio();
+        Lugar l = p.getLugar();
+        String ubicacion = l == null ? null
+                : l.getEdificio().getNombre().split(" - ")[0] + ", " + co.edu.ucc.pasto3d.ia.TextoUtil.nombrePiso(l.getPiso());
         return new ProgramaDTO(p.getId(), p.getNombre(), p.getFacultad(), p.getNivel(), p.getModalidad(),
                 p.getDuracionSemestres(), p.getTitulo(), p.getDescripcion(),
-                e == null ? null : e.getId(), e == null ? null : e.getNombre());
+                e == null ? null : e.getId(), e == null ? null : e.getNombre(),
+                l == null ? null : l.getId(), l == null ? null : l.getNombre(), ubicacion);
     }
 }
 

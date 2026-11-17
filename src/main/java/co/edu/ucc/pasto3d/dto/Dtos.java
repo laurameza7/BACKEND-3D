@@ -13,7 +13,9 @@ public final class Dtos {
 
     public record ProgramaDTO(Integer id, String nombre, String facultad, String nivel, String modalidad,
                               Integer duracionSemestres, String titulo, String descripcion,
-                              Integer edificioId, String edificio) { }
+                              Integer edificioId, String edificio,
+                              /** Facultad del programa dentro del campus (para llevar al visitante allí). */
+                              Integer lugarId, String lugar, String ubicacion) { }
 
     public record PreguntaFrecuenteDTO(Integer id, String categoria, String pregunta, String respuesta,
                                        String palabrasClave) { }

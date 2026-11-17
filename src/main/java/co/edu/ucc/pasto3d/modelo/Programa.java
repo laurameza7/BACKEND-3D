@@ -17,6 +17,10 @@ public class Programa {
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "edificio_id")
     private Edificio edificio;
+    /** Lugar donde queda la facultad del programa (oficinas, decanatura). */
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "lugar_id")
+    private Lugar lugar;
 
     public Integer getId() { return id; }
     public String getNombre() { return nombre; }
@@ -27,6 +31,7 @@ public class Programa {
     public String getTitulo() { return titulo; }
     public String getDescripcion() { return descripcion; }
     public Edificio getEdificio() { return edificio; }
+    public Lugar getLugar() { return lugar; }
 }
 
 

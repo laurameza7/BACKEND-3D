@@ -81,6 +81,9 @@ class AutenticacionYCoopiTests {
                 "{\"pregunta\":\"Ey Coopi, llévame al programa de ingeniería de software\"}", token, 200);
         assertThat(sw.at("/accion/tipo").asText()).isEqualTo("IR_PROGRAMA");
         assertThat(sw.at("/accion/etiqueta").asText()).isEqualTo("Ingeniería de Software");
+        // Lleva a la Facultad de Ingeniería (Bloque B, piso 4)
+        assertThat(sw.at("/accion/lugarId").isNumber()).isTrue();
+        assertThat(sw.get("respuesta").asText()).contains("Facultad de Ingeniería").contains("piso 4");
 
         JsonNode resto = enviar("/api/asistente/preguntar", "{\"pregunta\":\"quiero ver el restaurante\"}", token, 200);
         assertThat(resto.at("/accion/tipo").asText()).isEqualTo("IR_LUGAR");
@@ -91,5 +94,12 @@ class AutenticacionYCoopiTests {
 
         JsonNode med = enviar("/api/asistente/preguntar", "{\"pregunta\":\"llévame a medicina\"}", token, 200);
         assertThat(med.at("/accion/etiqueta").asText()).isEqualTo("Medicina");
+
+        JsonNode urcunina = enviar("/api/asistente/preguntar", "{\"pregunta\":\"quiero ir al auditorio Urcunina\"}", token, 200);
+        assertThat(urcunina.at("/accion/etiqueta").asText()).isEqualTo("Auditorio Urcunina");
+        JsonNode gym = enviar("/api/asistente/preguntar", "{\"pregunta\":\"¿dónde queda el gimnasio?\"}", token, 200);
+        assertThat(gym.at("/accion/etiqueta").asText()).isEqualTo("Gimnasio");
+        JsonNode ingles = enviar("/api/asistente/preguntar", "{\"pregunta\":\"llévame al centro de inglés\"}", token, 200);
+        assertThat(ingles.at("/accion/etiqueta").asText()).isEqualTo("Open Language Center");
     }
 }

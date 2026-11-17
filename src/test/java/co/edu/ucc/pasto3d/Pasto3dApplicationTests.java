@@ -21,6 +21,9 @@ class Pasto3dApplicationTests {
     void cargaLosDatosDelCampus() {
         assertThat(campus.edificios()).isNotEmpty();
         assertThat(campus.programas()).extracting("nombre").contains("Ingeniería de Software");
+        // Cada programa de pregrado con facultad registrada sabe dónde queda
+        assertThat(campus.programas()).filteredOn(p -> p.nombre().equals("Ingeniería de Software"))
+                .first().extracting("lugar").isEqualTo("Facultad de Ingeniería");
     }
 
     @Test

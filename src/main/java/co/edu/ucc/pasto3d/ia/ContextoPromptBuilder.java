@@ -54,7 +54,8 @@ public class ContextoPromptBuilder {
             sb.append("- ").append(p.nombre()).append(" (").append(p.nivel()).append(", ").append(p.modalidad())
               .append(p.duracionSemestres() != null ? ", " + p.duracionSemestres() + " semestres" : "")
               .append(", título: ").append(p.titulo()).append(", ").append(p.facultad())
-              .append(p.edificio() != null ? ", clases en " + p.edificio() : "").append("). ")
+              .append(p.edificio() != null ? ", clases en " + p.edificio() : "")
+              .append(p.lugar() != null ? ", su facultad queda en " + p.ubicacion() + " (" + p.lugar() + ")" : "").append("). ")
               .append(p.descripcion()).append('\n');
         return this;
     }

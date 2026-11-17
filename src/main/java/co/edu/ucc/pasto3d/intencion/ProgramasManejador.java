@@ -41,14 +41,16 @@ public class ProgramasManejador implements ManejadorIntencion {
         if (!c.pideIr() && esPreguntaConcreta(c)) return Optional.empty();
 
         ProgramaDTO p = programa.get();
-        String donde = p.edificio() != null ? " Sus prácticas y clínicas están en el " + p.edificio() + "." : "";
+        String donde = p.lugar() != null
+                ? " Te llevo a la " + p.lugar() + ", que queda en el " + p.ubicacion() + "."
+                : p.edificio() != null ? " Sus prácticas y clínicas están en el " + p.edificio() + "." : "";
         String texto = "¡Listo! Te llevo al programa de " + p.nombre() + " (" + p.facultad() + ")."
                 + (p.duracionSemestres() != null ? " Dura " + p.duracionSemestres() + " semestres" : "")
                 + (p.titulo() != null ? " y otorgas el título de " + p.titulo() + "." : ".")
                 + donde + " ¿En qué te puedo ayudar con " + p.nombre() + "?";
         texto = texto.replace("otorgas", "otorga");
         return Optional.of(new RespuestaDTO(texto, "coopi", p.edificioId(),
-                new AccionDTO("IR_PROGRAMA", p.id(), null, p.edificioId(), null, p.nombre())));
+                new AccionDTO("IR_PROGRAMA", p.id(), p.lugarId(), p.edificioId(), null, p.nombre())));
     }
 
     private static boolean pideLista(Consulta c) {
