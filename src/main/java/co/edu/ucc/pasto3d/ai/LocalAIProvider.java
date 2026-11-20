@@ -37,8 +37,8 @@ public class LocalAIProvider implements AIProvider {
         // Is it asking about a specific program?
         for (ProgramDTO p : c.programs()) {
             String name = normalize(p.name());
-            String password = name.replace("ingenieria de ", "").replace("ingenieria ", "");
-            if (q.contains(" " + name + " ") || q.contains(" " + password + " "))
+            String shortName = name.replace("ingenieria de ", "").replace("ingenieria ", "");
+            if (q.contains(" " + name + " ") || q.contains(" " + shortName + " "))
                 return p.name() + ": " + p.description() + " Modalidad " + TextUtil.modalityName(p.modality())
                      + (p.durationSemesters() != null ? ", " + p.durationSemesters() + " semestres" : "")
                      + ". Título: " + p.degreeTitle() + ". Pertenece a la " + p.faculty()
@@ -79,11 +79,11 @@ public class LocalAIProvider implements AIProvider {
              + "602 7370660 (Admisiones, ext. 2312).";
     }
 
-    /** Counts the meaningful words (4+ letters) of 'text' that appear in the question. */
+    /** Counts the meaningful words (4+ letters) of 'text' that appear in the question (matched from the start of a word). */
     private int score(String normalizedQuestion, String text) {
         int p = 0;
         for (String word : normalize(text).split(" "))
-            if (word.length() >= 4 && normalizedQuestion.contains(stem(word))) p++;
+            if (word.length() >= 4 && normalizedQuestion.contains(" " + stem(word))) p++;   // start of a word: "marte" is not "arte"
         return p;
     }
 
@@ -91,8 +91,8 @@ public class LocalAIProvider implements AIProvider {
     private int keywordMatches(String normalizedQuestion, String keys) {
         if (keys == null) return 0;
         int p = 0;
-        for (String password : keys.split(","))
-            if (!password.isBlank() && normalizedQuestion.contains(" " + normalize(password) + " ")) p += 2;
+        for (String keyword : keys.split(","))
+            if (!keyword.isBlank() && normalizedQuestion.contains(" " + normalize(keyword) + " ")) p += 2;
         return p;
     }
 

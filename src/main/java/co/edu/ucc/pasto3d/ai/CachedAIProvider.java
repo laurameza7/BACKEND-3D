@@ -23,15 +23,15 @@ public class CachedAIProvider extends AIProviderDecorator {
 
     @Override
     public String answer(String question, CampusContext context, String hints) {
-        String password = TextUtil.normalize(question) + "|" + (hints == null ? "" : hints);
-        CacheEntry e = cache.get(password);
+        String cacheKey = TextUtil.normalize(question) + "|" + (hints == null ? "" : hints);
+        CacheEntry e = cache.get(cacheKey);
         if (e != null && e.created().plus(VALIDITY).isAfter(Instant.now())) {
             AssistantMetrics.instance().recordCacheHit();
             return e.answer();
         }
         String r = wrapped.answer(question, context, hints);
         if (cache.size() >= MAX_ENTRIES) cache.clear();
-        cache.put(password, new CacheEntry(r, Instant.now()));
+        cache.put(cacheKey, new CacheEntry(r, Instant.now()));
         return r;
     }
 }

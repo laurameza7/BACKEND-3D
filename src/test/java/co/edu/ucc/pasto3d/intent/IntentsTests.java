@@ -124,4 +124,11 @@ class IntentsTests {
                 .isEqualTo("donde queda la biblioteca");
         assertThat(Query.of("Oye Coopi llévame", null, null, null).normalized()).isEqualTo("llevame");
     }
+
+    @Test
+    void anUnknownPlaceIsNotConfusedWithAPlaceThatContainsItsLetters() {
+        // "marte" contains "arte", but it is not the Salón de Arte, Música y Cultura
+        AnswerDTO r = ask("llévame a marte");
+        assertThat(r.answer()).doesNotContain("Salón de Arte");
+    }
 }
