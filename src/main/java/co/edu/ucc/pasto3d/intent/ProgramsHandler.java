@@ -36,6 +36,8 @@ public class ProgramsHandler implements IntentHandler {
                     "coopi", null, ActionDTO.of("SHOW_PROGRAMS")));
         }
         Optional<ProgramDTO> program = find(c.normalized(), c.context().programs());
+        // "llévame a la facultad de medicina" asks for the faculty (a place), not for the program
+        if (c.contains("facultad") && !c.contains("programa", "carrera")) return Optional.empty();
         if (program.isEmpty() || !(c.asksToGo() || c.contains("program", "carrera"))) return Optional.empty();
         // "¿Cuánto dura Medicina?" without asking to go → the AI answers it with the full context.
         if (!c.asksToGo() && isSpecificQuestion(c)) return Optional.empty();
