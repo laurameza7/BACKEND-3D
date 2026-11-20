@@ -3,7 +3,8 @@ package co.edu.ucc.pasto3d.servicio;
 import co.edu.ucc.pasto3d.dto.Dtos.*;
 import co.edu.ucc.pasto3d.modelo.Usuario;
 import co.edu.ucc.pasto3d.repositorio.UsuarioRepositorio;
-import co.edu.ucc.pasto3d.seguridad.Sesion;
+import co.edu.ucc.pasto3d.seguridad.CreadorSesionInvitado;
+import co.edu.ucc.pasto3d.seguridad.CreadorSesionUsuario;
 import co.edu.ucc.pasto3d.seguridad.TokenServicio;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -54,13 +55,11 @@ public class AuthService {
     }
 
     public SesionDTO invitado() {
-        Sesion s = new Sesion(null, "Invitado", "INVITADO");
-        return new SesionDTO(tokens.emitir(s), null, s.nombre(), null, s.rol());
+        return new CreadorSesionInvitado().iniciar(tokens);          // FACTORY METHOD
     }
 
     private SesionDTO sesionDe(Usuario u) {
-        Sesion s = new Sesion(u.getId(), u.getNombre(), u.getRol());
-        return new SesionDTO(tokens.emitir(s), u.getId(), u.getNombre(), u.getCorreo(), u.getRol());
+        return new CreadorSesionUsuario(u).iniciar(tokens);          // FACTORY METHOD
     }
 
     private void validarHuella(String huella) {
