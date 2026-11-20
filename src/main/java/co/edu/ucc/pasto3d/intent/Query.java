@@ -32,9 +32,16 @@ public record Query(String original, String normalized, CampusContext context, S
 
     /** "llévame", "quiero ir", "muéstrame", "dónde queda", "cómo llego"... ("take me", "where is"...) */
     public boolean asksToGo() {
+        // "¿A qué hora abre la biblioteca?" asks for a schedule, it is not "abre (open) the library"
+        if (asksForTime()) return false;
         return contains("llevame", "llevarme", "lleveme", "llevanos", "quiero ir", "vamos a", "vamos al", "ir a", "ir al",
                 "muestrame", "mostrame", "ensename", "quiero ver", "ver el", "ver la", "donde queda", "donde esta",
                 "donde se encuentra", "como llego", "ubicame", "guiame", "dirigeme", "abre", "abrir", "entrar a", "entrar al");
+    }
+
+    /** "¿a qué hora abre…?", "¿cuál es el horario…?", "¿cuándo cierra…?" */
+    public boolean asksForTime() {
+        return contains("a que hora", "que horario", "cual es el horario", "cuando abre", "cuando cierra", "hasta que hora", "horarios de", "horario de");
     }
 
     public String userName() {

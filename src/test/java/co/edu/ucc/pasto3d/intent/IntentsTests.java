@@ -131,4 +131,12 @@ class IntentsTests {
         AnswerDTO r = ask("llévame a marte");
         assertThat(r.answer()).doesNotContain("Salón de Arte");
     }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"¿a qué hora abre la biblioteca?", "¿cuál es el horario de tesorería?", "¿hasta qué hora abre la cafetería?"})
+    void aQuestionAboutTheScheduleIsAnsweredInsteadOfNavigating(String question) {
+        AnswerDTO r = ask(question);
+        assertThat(r.action()).isNull();
+        assertThat(r.answer()).isNotBlank();
+    }
 }
