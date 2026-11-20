@@ -1,5 +1,8 @@
 package co.edu.ucc.pasto3d.ai;
 
+import co.edu.ucc.pasto3d.intent.OffTopicHandler;
+import co.edu.ucc.pasto3d.intent.OutsideCampusHandler;
+
 import co.edu.ucc.pasto3d.dto.Dtos.*;
 import org.springframework.stereotype.Component;
 
@@ -33,6 +36,9 @@ public class LocalAIProvider implements AIProvider {
             return "En el campus Pasto se ofrecen estos programas:\n" + c.programs().stream()
                     .map(p -> "• " + p.name() + " (" + p.faculty() + ")")
                     .collect(Collectors.joining("\n"));
+
+        // Coopi only talks about the university
+        if (!OutsideCampusHandler.namesTheCampus(q.trim(), c)) return OffTopicHandler.ONLY_UNIVERSITY;
 
         // Is it asking about a specific program?
         for (ProgramDTO p : c.programs()) {

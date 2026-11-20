@@ -72,7 +72,15 @@ class LocalAIProviderTests {
 
     @Test
     void whenItDoesNotKnowItSaysSoAndGivesThePhone() {
-        assertThat(ai.answer("¿quién ganó el partido de ayer?", campus))
+        assertThat(ai.answer("¿cuál es el horario del bloque a en vacaciones de mitad de año?", campus))
+                .doesNotStartWith("Lo siento");
+        assertThat(ai.answer("¿qué beca hay para deportistas?", campus))
                 .startsWith("No encontré esa información").contains("602 7370660");
+    }
+
+    @Test
+    void onlyAnswersAboutTheUniversity() {
+        for (String q : new String[]{"¿quién ganó el partido de ayer?", "cuál es la capital de Francia", "dime un chiste"})
+            assertThat(ai.answer(q, campus)).as(q).startsWith("Lo siento, únicamente respondo preguntas sobre la Universidad");
     }
 }
