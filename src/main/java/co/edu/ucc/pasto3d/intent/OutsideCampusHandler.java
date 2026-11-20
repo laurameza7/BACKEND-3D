@@ -62,5 +62,7 @@ public class OutsideCampusHandler implements IntentHandler {
 
     /** Words that appear in campus names but say nothing about the campus by themselves. */
     private static final Set<String> COMMON_WORDS = Set.of("para", "sobre", "como", "donde", "cuando", "quien",
-            "este", "esta", "esto", "todo", "todos", "tiene", "hace", "general", "centro", "servicio", "atencion");
+            "este", "esta", "esto", "todo", "todos", "tiene", "hace", "general", "centro", "servicio", "atencion", "queda",
+            "saber", "numero", "llamar", "entrar", "cuantos", "comuna", "cultura", "evento", "juegos", "futbol",
+            "deporte", "deportes", "ping", "pong");
 }
