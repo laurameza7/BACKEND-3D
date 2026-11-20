@@ -45,12 +45,17 @@ public class ProgramasManejador implements ManejadorIntencion {
                 ? " Te llevo a la " + p.lugar() + ", que queda en el " + p.ubicacion() + "."
                 : p.edificio() != null ? " Sus prácticas y clínicas están en el " + p.edificio() + "." : "";
         String texto = "¡Listo! Te llevo al programa de " + p.nombre() + " (" + p.facultad() + ")."
-                + (p.duracionSemestres() != null ? " Dura " + p.duracionSemestres() + " semestres" : "")
-                + (p.titulo() != null ? " y otorgas el título de " + p.titulo() + "." : ".")
+                + detalle(p.duracionSemestres(), p.titulo())
                 + donde + " ¿En qué te puedo ayudar con " + p.nombre() + "?";
-        texto = texto.replace("otorgas", "otorga");
         return Optional.of(new RespuestaDTO(texto, "coopi", p.edificioId(),
                 new AccionDTO("IR_PROGRAMA", p.id(), p.lugarId(), p.edificioId(), null, p.nombre())));
+    }
+
+    /** " Dura 9 semestres y otorga el título de Abogado(a)." (omite lo que no esté registrado). */
+    static String detalle(Integer semestres, String titulo) {
+        if (semestres == null && titulo == null) return "";
+        if (semestres == null) return " Otorga el título de " + titulo + ".";
+        return " Dura " + semestres + " semestres" + (titulo == null ? "." : " y otorga el título de " + titulo + ".");
     }
 
     private static boolean pideLista(Consulta c) {
@@ -78,6 +83,9 @@ public class ProgramasManejador implements ManejadorIntencion {
             if (coinciden == 0) continue;
             double puntaje = coinciden + (double) coinciden / claves.size();
             boolean esEsp = "ESPECIALIZACION".equals(p.nivel());
+            // Una especialización solo se elige sin decir "especialización" si se nombra al menos la mitad
+            // de sus palabras: "llévame al café" es la cafetería, no la Esp. en Producción y Comercio del Café.
+            if (esEsp && !quiereEspecializacion && coinciden * 2 < claves.size()) continue;
             if (esEsp != quiereEspecializacion) puntaje -= 0.5;
             if (puntaje > mejorPuntaje) { mejorPuntaje = puntaje; mejor = p; }
         }
