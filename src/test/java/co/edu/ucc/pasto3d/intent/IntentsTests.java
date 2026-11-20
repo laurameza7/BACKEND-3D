@@ -152,4 +152,19 @@ class IntentsTests {
     void askingForTheDegreeTitleIsAnsweredInsteadOfNavigating() {
         assertThat(ask("¿qué título da el programa de derecho?").action()).isNull();
     }
+
+    @ParameterizedTest(name = "«{0}» no es de la universidad")
+    @ValueSource(strings = {"llevame a bogota", "llévame a la mierda", "llévame a la playa", "quiero ir a Cali",
+            "eres un idiota", "dónde queda la torre Eiffel"})
+    void onlyAnswersAboutTheUniversity(String question) {
+        AnswerDTO r = ask(question);
+        assertThat(r.answer()).as(question).startsWith("Lo siento, únicamente respondo preguntas sobre la Universidad");
+        assertThat(r.action()).isNull();
+    }
+
+    @Test
+    void offTopicIgnoresTheProgramBeingViewed() {
+        AnswerDTO r = coopi.ask("llevame a bogota", 1, GUEST);
+        assertThat(r.answer()).startsWith("Lo siento, únicamente respondo");
+    }
 }
