@@ -16,9 +16,17 @@ public record Consulta(String original, String normal, ContextoCampus contexto, 
         return new Consulta(texto, n, contexto, sesion, programaActual);
     }
 
+    /**
+     * ¿El mensaje contiene alguna de las frases? Las frases largas se aceptan como prefijo
+     * ("laboratorio" → "laboratorios"); las cortas (4 letras o menos) solo como palabra completa
+     * o en plural, para que "ami" no coincida con "amigo" ni "cafe" con "cafeteria".
+     */
     public boolean contiene(String... frases) {
         String t = " " + normal + " ";
-        for (String f : frases) if (t.contains(" " + f + " ") || t.contains(" " + f)) return true;
+        for (String f : frases) {
+            if (t.contains(" " + f + " ")) return true;
+            if (f.length() <= 4 ? t.contains(" " + f + "s ") || t.contains(" " + f + "es ") : t.contains(" " + f)) return true;
+        }
         return false;
     }
 
