@@ -29,6 +29,8 @@ class IntentsTests {
     @ParameterizedTest(name = "«{0}» lleva a {1}")
     @CsvSource(delimiter = ';', value = {
             "llévame a la biblioteca; Biblioteca",
+            "llévame a la facultad de ingeniería; Facultad de Ingeniería",
+            "llevame a la facultad de medicina; Facultad de Medicina",
             "¿dónde queda tesorería?; Tesorería",
             "quiero ir a pagar la matrícula; Admisiones, Registro y Control Académico (DARC)",
             "llévame al café; Café Bonne Vie",
