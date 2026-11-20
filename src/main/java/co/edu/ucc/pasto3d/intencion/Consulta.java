@@ -31,6 +31,6 @@ public record Consulta(String original, String normal, ContextoCampus contexto, 
 
     public String nombreUsuario() {
         if (sesion == null || sesion.esInvitado() || sesion.nombre() == null || sesion.nombre().isBlank()) return null;
-        return sesion.nombre().split(" ")[0];
+        return sesion.nombre().trim().split("\\s+")[0];
     }
 }

@@ -77,7 +77,8 @@ public class AsistenteFacade {
     }
 
     public String saludo(Sesion sesion) {
-        String nombre = sesion == null || sesion.esInvitado() ? null : sesion.nombre().split(" ")[0];
+        String nombre = sesion == null || sesion.esInvitado() || sesion.nombre() == null || sesion.nombre().isBlank()
+                ? null : sesion.nombre().trim().split("\\s+")[0];
         return SaludoManejador.saludo(nombre);
     }
 
