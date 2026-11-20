@@ -28,6 +28,19 @@ Cooperativa de Colombia y su asistente con inteligencia artificial (**Coopi**).
 
 🔒 = requiere la cabecera `Authorization: Bearer <token>` (usuario registrado o invitado).
 
+Todos los errores responden con el mismo formato, en español (lo arma `config/ManejadorErrores`):
+
+```json
+{ "error": "Correo o contraseña incorrectos." }
+```
+
+| Código | Cuándo |
+|---|---|
+| 400 | Campo vacío o muy largo, JSON mal formado, contraseña sin cifrar, id que no es número |
+| 401 | Sin token, token vencido o alterado, o correo/contraseña incorrectos |
+| 404 | Programa o ruta que no existe |
+| 409 | Ya existe una cuenta con ese correo |
+
 ### Contraseñas
 - El navegador calcula **SHA-256** de la contraseña (máx. 30 caracteres) y solo envía esa *huella* de 64 caracteres.
 - El backend la vuelve a cifrar con **BCrypt** (sal aleatoria) y guarda únicamente ese resultado en `usuario.hash_clave`.
@@ -116,3 +129,23 @@ mvn spring-boot:run -Dspring-boot.run.profiles=local
 
 El perfil `local` usa H2 en memoria con una copia de las migraciones (`src/main/resources/db`).
 La fuente oficial del esquema es el repositorio de base de datos.
+
+## Pruebas
+
+```bash
+mvn verify        # compila, corre las pruebas y genera la cobertura en target/site/jacoco/index.html
+```
+
+GitHub Actions las ejecuta en cada push (pestaña **Actions**) y deja el reporte como artefacto.
+
+| Clase de prueba | Qué revisa |
+|---|---|
+| `PatronesTests` | Un caso por cada patrón del curso (Singleton, Prototype, Builder, Abstract Factory, Factory Method, Adapter, Bridge, Decorator, Facade, Proxy) |
+| `AutenticacionYCoopiTests` | Flujo completo: registro → ingreso → saludo con el nombre → Coopi lleva a programas y lugares |
+| `controlador/AuthApiTests` | La contraseña no se guarda (solo BCrypt), validaciones, `/yo`, historial separado por usuario |
+| `controlador/CampusApiTests` | Edificios, lugares por piso, programas con su facultad, 404/400 en JSON, CORS para Vercel |
+| `intencion/IntencionesTests` | Más de 30 frases reales («llévame al café», «¿dónde está el cajero?»…) y a dónde llevan |
+| `ia/LocalProveedorIATests` | La IA de respaldo con un campus de prueba armado a mano |
+| `ia/FormateadoresTests`, `ia/TextoUtilTests` | Limpieza del Markdown de Gemini y normalización de textos |
+| `seguridad/TokenServicioTests` | Tokens vencidos, alterados, firmados con otro secreto o mal formados |
+| `Pasto3dApplicationTests` | Arranque de la aplicación con los datos del campus |
