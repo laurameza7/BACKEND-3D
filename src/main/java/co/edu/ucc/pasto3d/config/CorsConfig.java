@@ -5,17 +5,17 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/** Permite que el frontend (desplegado en otro dominio) consuma la API. */
+/** Lets the frontend (deployed on another domain) call the API. */
 @Configuration
 public class CorsConfig implements WebMvcConfigurer {
 
-    @Value("${app.cors.origenes:*}")
-    private String origenes;
+    @Value("${app.cors.origins:*}")
+    private String origins;
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/api/**")
-                .allowedOriginPatterns(origenes.split(","))
+                .allowedOriginPatterns(origins.split(","))
                 .allowedMethods("GET", "POST", "OPTIONS");
     }
 }

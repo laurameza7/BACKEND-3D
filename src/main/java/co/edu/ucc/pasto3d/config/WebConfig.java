@@ -1,21 +1,21 @@
 package co.edu.ucc.pasto3d.config;
 
-import co.edu.ucc.pasto3d.seguridad.AutenticacionInterceptor;
+import co.edu.ucc.pasto3d.security.AuthenticationInterceptor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-/** Rutas que exigen sesión (usuario registrado o invitado). */
+/** Routes that require a session (registered user or guest). */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 
-    private final AutenticacionInterceptor autenticacion;
+    private final AuthenticationInterceptor authentication;
 
-    public WebConfig(AutenticacionInterceptor autenticacion) { this.autenticacion = autenticacion; }
+    public WebConfig(AuthenticationInterceptor authentication) { this.authentication = authentication; }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(autenticacion)
-                .addPathPatterns("/api/asistente/**", "/api/auth/yo");
+        registry.addInterceptor(authentication)
+                .addPathPatterns("/api/assistant/**", "/api/auth/me");
     }
 }

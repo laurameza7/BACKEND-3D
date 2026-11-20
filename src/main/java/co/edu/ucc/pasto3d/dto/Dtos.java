@@ -1,61 +1,61 @@
 package co.edu.ucc.pasto3d.dto;
 
-/** Patrón DTO: objetos que viajan entre backend y frontend sin exponer las entidades JPA. */
+/** DTO pattern: objects that travel between backend and frontend without exposing the JPA entities. */
 public final class Dtos {
     private Dtos() { }
 
-    public record EdificioDTO(Integer id, String codigo, String nombre, String descripcion,
-                              double x, double z, double ancho, double profundidad,
-                              int pisos, int sotanos, String color, String tipo) { }
+    public record BuildingDTO(Integer id, String code, String name, String description,
+                              double x, double z, double width, double depth,
+                              int floors, int basements, String color, String type) { }
 
-    public record LugarDTO(Integer id, String nombre, String tipo, Integer edificioId, String edificio,
-                           Integer piso, String descripcion, String horario, String telefono, String correo) { }
+    public record PlaceDTO(Integer id, String name, String type, Integer buildingId, String building,
+                           Integer floor, String description, String schedule, String phone, String email) { }
 
-    public record ProgramaDTO(Integer id, String nombre, String facultad, String nivel, String modalidad,
-                              Integer duracionSemestres, String titulo, String descripcion,
-                              Integer edificioId, String edificio,
-                              /** Facultad del programa dentro del campus (para llevar al visitante allí). */
-                              Integer lugarId, String lugar, String ubicacion) { }
+    public record ProgramDTO(Integer id, String name, String faculty, String level, String modality,
+                              Integer durationSemesters, String degreeTitle, String description,
+                              Integer buildingId, String building,
+                              /** Faculty of the program inside the campus (to take the visitor there). */
+                              Integer placeId, String place, String location) { }
 
-    public record PreguntaFrecuenteDTO(Integer id, String categoria, String pregunta, String respuesta,
-                                       String palabrasClave) { }
+    public record FaqDTO(Integer id, String category, String question, String answer,
+                                       String keywords) { }
 
-    /** programaId (opcional): el programa que el usuario está viendo, para que Coopi responda sobre él. */
-    public record PreguntaDTO(
+    /** programId (optional): the program the user is looking at, so Coopi answers about it. */
+    public record QuestionDTO(
             @jakarta.validation.constraints.NotBlank
-            @jakarta.validation.constraints.Size(max = 500) String pregunta,
-            Integer programaId) { }
+            @jakarta.validation.constraints.Size(max = 500) String question,
+            Integer programId) { }
 
-    /* ----- Usuarios ----- */
-    public record RegistroDTO(
-            @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 80) String nombre,
-            @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 120) String correo,
-            /** SHA-256 de la contraseña calculado en el navegador (nunca la contraseña). */
-            @jakarta.validation.constraints.NotBlank String huella) { }
+    /* ----- Users ----- */
+    public record RegisterDTO(
+            @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 80) String name,
+            @jakarta.validation.constraints.NotBlank @jakarta.validation.constraints.Size(max = 120) String email,
+            /** SHA-256 of the password computed in the browser (never the password itself). */
+            @jakarta.validation.constraints.NotBlank String fingerprint) { }
 
-    public record IngresoDTO(
-            @jakarta.validation.constraints.NotBlank String correo,
-            @jakarta.validation.constraints.NotBlank String huella) { }
+    public record LoginDTO(
+            @jakarta.validation.constraints.NotBlank String email,
+            @jakarta.validation.constraints.NotBlank String fingerprint) { }
 
-    public record SesionDTO(String token, Integer id, String nombre, String correo, String rol) { }
+    public record SessionDTO(String token, Integer id, String name, String email, String role) { }
 
     /**
-     * Acción que el frontend debe ejecutar después de mostrar la respuesta (patrón COMMAND):
-     * SALUDO, VER_PROGRAMAS, IR_PROGRAMA, IR_LUGAR o IR_EDIFICIO.
+     * Action the frontend must run after showing the answer (COMMAND pattern):
+     * GREETING, SHOW_PROGRAMS, GO_TO_PROGRAM, GO_TO_PLACE or GO_TO_BUILDING.
      */
-    public record AccionDTO(String tipo, Integer programaId, Integer lugarId, Integer edificioId,
-                            Integer piso, String etiqueta) {
-        public static AccionDTO de(String tipo) { return new AccionDTO(tipo, null, null, null, null, null); }
+    public record ActionDTO(String type, Integer programId, Integer placeId, Integer buildingId,
+                            Integer floor, String label) {
+        public static ActionDTO of(String type) { return new ActionDTO(type, null, null, null, null, null); }
     }
 
-    /** edificioId: si la respuesta menciona un bloque, el frontend lo resalta en el mapa 3D. */
-    public record RespuestaDTO(String respuesta, String proveedor, Integer edificioId, AccionDTO accion) {
-        public RespuestaDTO(String respuesta, String proveedor, Integer edificioId) {
-            this(respuesta, proveedor, edificioId, null);
+    /** buildingId: if the answer mentions a block, the frontend highlights it on the 3D map. */
+    public record AnswerDTO(String answer, String provider, Integer buildingId, ActionDTO action) {
+        public AnswerDTO(String answer, String provider, Integer buildingId) {
+            this(answer, provider, buildingId, null);
         }
     }
 
-    public record MensajeHistorialDTO(String pregunta, String respuesta, String fecha) { }
+    public record HistoryMessageDTO(String question, String answer, String date) { }
 }
 
 
