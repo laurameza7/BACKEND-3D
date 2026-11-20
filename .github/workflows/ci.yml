@@ -19,3 +19,19 @@ jobs:
         run: mvn -B verify
 
 
+
+      - name: Resumen de cobertura
+        if: always()
+        run: |
+          if [ -f target/site/jacoco/jacoco.csv ]; then
+            awk -F, 'NR>1 {f+=$4; c+=$5} END {printf "Cobertura de líneas de código: %.1f%%\n", 100*c/(f+c)}' target/site/jacoco/jacoco.csv | tee -a "$GITHUB_STEP_SUMMARY"
+          fi
+
+      - name: Guardar reporte de pruebas y cobertura
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: reporte-pruebas
+          path: |
+            target/surefire-reports/
+            target/site/jacoco/
