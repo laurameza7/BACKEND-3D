@@ -49,21 +49,49 @@ Si ninguna aplica, responde la IA (Gemini → respaldo local) con la informació
 
 ## Patrones de software implementados
 
-| # | Patrón | Dónde |
-|---|---|---|
-| 1 | **Strategy** | `ia/ProveedorIA` con dos estrategias: `GeminiProveedorIA` y `LocalProveedorIA` |
-| 2 | **Factory** | `ia/ProveedorIAFactory` decide qué estrategia(s) usar según configuración |
-| 3 | **Facade** | `servicio/AsistenteFacade.preguntar()` oculta contexto, IA, respaldo y registro |
-| 4 | **Adapter** | `ia/GeminiProveedorIA` adapta la API REST de Gemini a la interfaz `ProveedorIA` |
-| 5 | **Builder** | `ia/ContextoPromptBuilder` arma por partes el prompt con el conocimiento del campus |
-| + | Repository | `repositorio/*` (Spring Data JPA) |
-| + | DTO | `dto/Dtos` (records que viajan al frontend) |
-| + | Singleton / Inyección de dependencias | Todos los `@Service`, `@Component` son instancias únicas manejadas por Spring |
-| + | Chain of Responsibility (respaldo) | `AsistenteFacade` recorre la cadena Gemini → Local hasta que uno responde |
-| + | Chain of Responsibility (intenciones) | `intencion/*`: Saludo → Programas → Lugares → IA |
-| + | Command | `AccionDTO`: el backend envía la acción y el frontend la ejecuta |
-| + | Interceptor | `seguridad/AutenticacionInterceptor` valida el token antes de los controladores |
-| + | MVC | `controlador/*` |
+### Patrones del curso (creacionales y estructurales)
+
+| # | Patrón | Tipo | Dónde | Para qué se usa |
+|---|---|---|---|---|
+| 1 | **Singleton** | Creacional | `ia/MetricasAsistente` | Una sola instancia con las métricas de Coopi (respuestas por proveedor, tiempos, caché, cuota). Se ve en `GET /api/salud` |
+| 2 | **Prototype** | Creacional | `ia/PlantillaPrompt` (+ `GeminiProveedorIA.prototipo()`) | El prompt con todo el conocimiento del campus se arma una vez y se **clona** en cada pregunta |
+| 3 | **Builder** | Creacional | `ia/ContextoPromptBuilder` | Arma por partes el prompt: instrucciones, edificios, lugares, programas, preguntas frecuentes |
+| 4 | **Abstract Factory** | Creacional | `ia/FabricaIA` → `FabricaGemini`, `FabricaLocal` | Cada familia de IA crea su proveedor y su formateador, que siempre van juntos |
+| 5 | **Factory Method** | Creacional | `seguridad/CreadorSesion` → `CreadorSesionUsuario`, `CreadorSesionInvitado` | El inicio de sesión es igual para todos; cada subclase decide qué sesión crea |
+| 6 | **Adapter** | Estructural | `ia/GeminiProveedorIA` | Adapta la API REST de Google Gemini a la interfaz `ProveedorIA` del sistema |
+| 7 | **Bridge** | Estructural | `ia/PerfilAsistente` → `PerfilVisitante`, `PerfilEstudiante` (+ `ProveedorIA`) | Separa el perfil de quien pregunta del motor de IA: cualquier perfil con cualquier proveedor |
+| 8 | **Decorator** | Estructural | `ia/ProveedorIADecorador` → `ProveedorIAConCache`, `ProveedorIAMedido` | Agrega caché de respuestas y medición de tiempos sin tocar los proveedores |
+| 9 | **Facade** | Estructural | `servicio/AsistenteFacade.preguntar()` | Un único punto de entrada que oculta intenciones, IA, respaldo y guardado |
+| 10 | **Proxy** | Estructural | `ia/ProveedorIAProxy` | Proxy de protección delante de Gemini: limita las preguntas por minuto; si se agota la cuota responde la IA local |
+
+Cómo se combinan cuando alguien le pregunta a Coopi:
+
+```
+AsistenteFacade (Facade)
+ └─ cadena de intenciones (saludo, programas, lugares)        ← Chain of Responsibility
+ └─ ProveedorIAFactory → familias FabricaGemini / FabricaLocal  ← Abstract Factory
+      └─ ProveedorIAMedido( ProveedorIAConCache( ProveedorIAProxy( GeminiProveedorIA ) ) )
+           Decorator          Decorator            Proxy             Adapter
+      └─ FormateadorMarkdown / FormateadorTextoPlano            ← productos de la misma familia
+ └─ PerfilVisitante | PerfilEstudiante  ×  proveedor             ← Bridge
+      └─ PlantillaPrompt.copiar() (Prototype) armada con ContextoPromptBuilder (Builder)
+ └─ MetricasAsistente.instancia()                               ← Singleton
+Inicio de sesión: CreadorSesionUsuario / CreadorSesionInvitado  ← Factory Method
+```
+
+Cada patrón tiene su prueba en `src/test/java/.../PatronesTests.java`.
+
+### Otros patrones y prácticas usados
+
+| Patrón | Dónde |
+|---|---|
+| Strategy | `ia/ProveedorIA`: Gemini y Local son estrategias intercambiables |
+| Chain of Responsibility | `intencion/*` (Saludo → Programas → Lugares → IA) y el respaldo Gemini → Local |
+| Command | `AccionDTO`: el backend envía la acción y el frontend la ejecuta |
+| Interceptor | `seguridad/AutenticacionInterceptor` valida el token antes de los controladores |
+| Repository | `repositorio/*` (Spring Data JPA) |
+| DTO | `dto/Dtos` (records que viajan al frontend) |
+| MVC | `controlador/*` |
 
 ## Variables de entorno
 
@@ -77,6 +105,7 @@ Si ninguna aplica, responde la IA (Gemini → respaldo local) con la informació
 | `IA_PROVEEDOR` | `gemini` o `local` |
 | `CORS_ORIGENES` | `https://ucc-pasto3d.vercel.app` |
 | `APP_SECRETO` | texto largo y aleatorio para firmar los tokens de sesión |
+| `GEMINI_LIMITE_MINUTO` | `30` (preguntas por minuto que deja pasar el Proxy hacia Gemini) |
 
 ## Correr en el computador (sin PostgreSQL)
 
