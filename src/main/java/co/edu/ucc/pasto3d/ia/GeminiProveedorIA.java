@@ -20,6 +20,9 @@ public class GeminiProveedorIA implements ProveedorIA {
     private final String apiKey;
     private final String modelo;
     private final RestClient http;
+    /** PROTOTYPE: plantilla con el conocimiento del campus, se arma una vez y se clona por pregunta. */
+    private PlantillaPrompt prototipo;
+    private ContextoCampus contextoDelPrototipo;
 
     public GeminiProveedorIA(@Value("${ia.gemini.api-key:}") String apiKey,
                              @Value("${ia.gemini.modelo:gemini-3.5-flash}") String modelo) {
@@ -40,13 +43,16 @@ public class GeminiProveedorIA implements ProveedorIA {
 
     @Override
     public String responder(String pregunta, ContextoCampus contexto) {
-        String sistema = new ContextoPromptBuilder()
-                .instrucciones()
-                .edificios(contexto)
-                .lugares(contexto)
-                .programas(contexto)
-                .preguntasFrecuentes(contexto)
-                .construir();
+        return responder(pregunta, contexto, null);
+    }
+
+    @Override
+    public String responder(String pregunta, ContextoCampus contexto, String indicaciones) {
+        String sistema = prototipo(contexto).copiar()          // clon: el prototipo no se toca
+                .agregar(indicaciones)                         // perfil de quien pregunta (BRIDGE)
+                .agregar("Fecha y hora actual en Pasto: " + java.time.ZonedDateTime.now(java.time.ZoneId.of("America/Bogota"))
+                        .format(java.time.format.DateTimeFormatter.ofPattern("EEEE d 'de' MMMM yyyy, h:mm a", new java.util.Locale("es", "CO"))))
+                .texto();
 
         Map<String, Object> cuerpo = Map.of(
                 "systemInstruction", Map.of("parts", List.of(Map.of("text", sistema))),
@@ -67,16 +73,22 @@ public class GeminiProveedorIA implements ProveedorIA {
             for (JsonNode parte : r.path("candidates").path(0).path("content").path("parts"))
                 texto.append(parte.path("text").asText(""));
         if (texto.isEmpty()) throw new IllegalStateException("Gemini no devolvió texto");
-        return limpiarMarkdown(texto.toString());
+        return texto.toString();      // el FormateadorMarkdown de su familia lo deja en texto plano
     }
 
-    /** El chat muestra texto plano: quita negritas, títulos y viñetas de Markdown. */
-    static String limpiarMarkdown(String t) {
-        return t.replace("**", "")
-                .replaceAll("(?m)^#{1,6}[ \\t]*", "")
-                .replaceAll("(?m)^[ \\t]*[*-][ \\t]+", "• ")
-                .replaceAll("\\n{3,}", "\n\n")
-                .trim();
+    /** Arma el prototipo con el BUILDER solo cuando cambian los datos del campus. */
+    synchronized PlantillaPrompt prototipo(ContextoCampus contexto) {
+        if (prototipo == null || !contexto.equals(contextoDelPrototipo)) {
+            prototipo = new PlantillaPrompt(new ContextoPromptBuilder()
+                    .instrucciones()
+                    .edificios(contexto)
+                    .lugares(contexto)
+                    .programas(contexto)
+                    .preguntasFrecuentes(contexto)
+                    .construir());
+            contextoDelPrototipo = contexto;
+        }
+        return prototipo;
     }
 }
 
