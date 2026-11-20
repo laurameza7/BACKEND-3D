@@ -15,7 +15,7 @@
     <artifactId>ucc-pasto3d-backend</artifactId>
     <version>0.8.0</version>
     <name>UCC Pasto 3D - Backend</name>
-    <description>API REST en Java para el mapa 3D y el asistente con IA del campus Pasto</description>
+    <description>Java REST API for the 3D map and the AI assistant of the Pasto campus</description>
 
     <properties>
         <java.version>21</java.version>
@@ -38,7 +38,7 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-actuator</artifactId>
         </dependency>
-        <!-- Solo el módulo de cifrado (BCrypt), sin el resto de Spring Security -->
+        <!-- Only the crypto module (BCrypt), without the rest of Spring Security -->
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-crypto</artifactId>
@@ -67,7 +67,7 @@
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
             </plugin>
-            <!-- Cobertura de las pruebas: genera target/site/jacoco/index.html con "mvn verify" -->
+            <!-- Test coverage: "mvn verify" writes target/site/jacoco/index.html -->
             <plugin>
                 <groupId>org.jacoco</groupId>
                 <artifactId>jacoco-maven-plugin</artifactId>

@@ -1,8 +1,8 @@
-name: Compilar y probar backend
+name: Build and test backend
 
 on:
   push:
-    branches: [ main ]
+    branches: [ '**' ]
   pull_request:
 
 jobs:
@@ -15,23 +15,21 @@ jobs:
           distribution: temurin
           java-version: '21'
           cache: maven
-      - name: Compilar y ejecutar pruebas
+      - name: Build and run tests
         run: mvn -B verify
 
-
-
-      - name: Resumen de cobertura
+      - name: Coverage summary
         if: always()
         run: |
           if [ -f target/site/jacoco/jacoco.csv ]; then
-            awk -F, 'NR>1 {f+=$8; c+=$9} END {printf "Cobertura de líneas de código: %.1f%%\n", 100*c/(f+c)}' target/site/jacoco/jacoco.csv | tee -a "$GITHUB_STEP_SUMMARY"
+            awk -F, 'NR>1 {f+=$8; c+=$9} END {printf "Line coverage: %.1f%%\n", 100*c/(f+c)}' target/site/jacoco/jacoco.csv | tee -a "$GITHUB_STEP_SUMMARY"
           fi
 
-      - name: Guardar reporte de pruebas y cobertura
+      - name: Save test and coverage report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: reporte-pruebas
+          name: test-report
           path: |
             target/surefire-reports/
             target/site/jacoco/

@@ -3,7 +3,7 @@ services:
     name: ucc-pasto3d-backend
     runtime: docker
     plan: free
-    healthCheckPath: /api/salud
+    healthCheckPath: /api/health
     envVars:
       - key: DB_URL
         sync: false
@@ -13,7 +13,7 @@ services:
         sync: false
       - key: GEMINI_API_KEY
         sync: false
-      - key: IA_PROVEEDOR
+      - key: AI_PROVIDER
         value: gemini
-      - key: CORS_ORIGENES
+      - key: CORS_ORIGINS
         sync: false
