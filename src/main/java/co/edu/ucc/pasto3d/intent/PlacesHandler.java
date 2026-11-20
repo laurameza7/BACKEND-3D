@@ -144,7 +144,7 @@ public class PlacesHandler implements IntentHandler {
         String name = l.name();
         String intro = (askedAs.equals("restaurante") || askedAs.equals("comedor"))
                 ? "El restaurante del campus es la " + name + ". " : "";
-        String text = intro + "¡Vamos! Te llevo a " + name + ", en el " + floorName(l.floor()) + " del " + l.building() + ". "
+        String text = intro + "¡Vamos para allá! " + name + " queda en el " + floorName(l.floor()) + " del " + l.building() + ". "
                 + (l.description() != null ? l.description() + " " : "")
                 + (l.schedule() != null ? "Horario: " + l.schedule() + ". " : "")
                 + (l.phone() != null ? "Contacto: " + l.phone() + ". " : "")
