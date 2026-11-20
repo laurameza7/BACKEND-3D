@@ -4,9 +4,13 @@ package co.edu.ucc.pasto3d.ia;
 public class FormateadorMarkdown implements FormateadorRespuesta {
     @Override
     public String formatear(String t) {
+        if (t == null) return "";
         return t.replace("**", "")
-                .replaceAll("(?m)^#{1,6}[ \\t]*", "")
-                .replaceAll("(?m)^[ \\t]*[*-][ \\t]+", "• ")
+                .replace("__", "")
+                .replaceAll("(?m)^#{1,6}[ \\t]*", "")              // títulos
+                .replaceAll("(?m)^[ \\t]*[*-][ \\t]+", "• ")         // viñetas
+                .replaceAll("(?<![\\w*])\\*([^*\\n]+)\\*(?![\\w*])", "$1")   // *cursiva*
+                .replaceAll("`([^`\\n]+)`", "$1")                    // `código`
                 .replaceAll("\\n{3,}", "\n\n")
                 .trim();
     }
