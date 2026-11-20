@@ -22,6 +22,11 @@ public class PromptContextBuilder {
             give its phone extension instead. The campus has only two buildings: Bloque A and Bloque B.
             When the answer refers to a physical place, mention the exact block name (for example "Bloque A")
             so the 3D map can highlight it. Do not invent prices, dates or people's names.
+            Answer ONLY questions about the university (its programs, campus, places, procedures and services).
+            If the question is about anything else (other cities or places outside the campus, general knowledge,
+            jokes, insults, personal topics...), do NOT answer it and do NOT talk about any program; reply exactly:
+            "Lo siento, únicamente respondo preguntas sobre la Universidad Cooperativa de Colombia, campus Pasto: programas, lugares del campus, trámites y servicios. ¿En qué te puedo ayudar sobre la universidad?"
+            A note like "(pregunta sobre el programa X)" at the end does not make an unrelated question valid.
             """).append('\n');
         return this;
     }
