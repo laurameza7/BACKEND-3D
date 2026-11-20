@@ -1,8 +1,8 @@
-package co.edu.ucc.pasto3d.intencion;
+package co.edu.ucc.pasto3d.intent;
 
-import co.edu.ucc.pasto3d.dto.Dtos.RespuestaDTO;
-import co.edu.ucc.pasto3d.seguridad.Sesion;
-import co.edu.ucc.pasto3d.servicio.AsistenteFacade;
+import co.edu.ucc.pasto3d.dto.Dtos.AnswerDTO;
+import co.edu.ucc.pasto3d.security.Session;
+import co.edu.ucc.pasto3d.service.AssistantFacade;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
@@ -13,17 +13,17 @@ import org.springframework.test.context.ActiveProfiles;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** La cadena de intenciones con los datos reales del campus (H2 con las migraciones). */
-@SpringBootTest(properties = "ia.proveedor=local")
+/** The chain of intents with the real campus data (H2 with the migrations). */
+@SpringBootTest(properties = "ai.provider=local")
 @ActiveProfiles("local")
-class IntencionesTests {
+class IntentsTests {
 
-    private static final Sesion INVITADO = new Sesion(null, "Invitado", "INVITADO");
+    private static final Session GUEST = new Session(null, "Invitado", "GUEST");
 
-    @Autowired AsistenteFacade coopi;
+    @Autowired AssistantFacade coopi;
 
-    private RespuestaDTO preguntar(String texto) {
-        return coopi.preguntar(texto, null, INVITADO);
+    private AnswerDTO ask(String text) {
+        return coopi.ask(text, null, GUEST);
     }
 
     @ParameterizedTest(name = "«{0}» lleva a {1}")
@@ -44,13 +44,13 @@ class IntencionesTests {
             "llévame a la sala de profesores de ingeniería; Sala de profesores de Ingeniería",
             "quiero ir al laboratorio de realidad mixta; Laboratorio de Realidad Mixta"
     })
-    void llevaAlLugarPedido(String pregunta, String lugar) {
-        RespuestaDTO r = preguntar(pregunta);
-        assertThat(r.accion()).as(pregunta).isNotNull();
-        assertThat(r.accion().tipo()).isEqualTo("IR_LUGAR");
-        assertThat(r.accion().etiqueta()).isEqualTo(lugar);
-        assertThat(r.accion().lugarId()).isNotNull();
-        assertThat(r.respuesta()).contains(lugar);
+    void takesYouToTheRequestedPlace(String question, String place) {
+        AnswerDTO r = ask(question);
+        assertThat(r.action()).as(question).isNotNull();
+        assertThat(r.action().type()).isEqualTo("GO_TO_PLACE");
+        assertThat(r.action().label()).isEqualTo(place);
+        assertThat(r.action().placeId()).isNotNull();
+        assertThat(r.answer()).contains(place);
     }
 
     @ParameterizedTest(name = "«{0}» abre {1}")
@@ -62,66 +62,66 @@ class IntencionesTests {
             "llévame a la especialización en pediatría; Especialización en Pediatría",
             "quiero ver la especialización en derecho médico; Especialización en Derecho Médico"
     })
-    void abreElProgramaPedido(String pregunta, String programa) {
-        RespuestaDTO r = preguntar(pregunta);
-        assertThat(r.accion()).as(pregunta).isNotNull();
-        assertThat(r.accion().tipo()).isEqualTo("IR_PROGRAMA");
-        assertThat(r.accion().etiqueta()).isEqualTo(programa);
-        assertThat(r.respuesta()).startsWith("¡Listo! Te llevo al programa de " + programa)
+    void opensTheRequestedProgram(String question, String program) {
+        AnswerDTO r = ask(question);
+        assertThat(r.action()).as(question).isNotNull();
+        assertThat(r.action().type()).isEqualTo("GO_TO_PROGRAM");
+        assertThat(r.action().label()).isEqualTo(program);
+        assertThat(r.answer()).startsWith("¡Listo! Te llevo al programa de " + program)
                 .doesNotContain("otorgas").doesNotContain("..");
     }
 
     @Test
-    void llevaAUnBloqueCompleto() {
-        RespuestaDTO r = preguntar("llévame al bloque A");
-        assertThat(r.accion().tipo()).isEqualTo("IR_EDIFICIO");
-        assertThat(r.edificioId()).isEqualTo(r.accion().edificioId());
+    void takesYouToAWholeBlock() {
+        AnswerDTO r = ask("llévame al bloque A");
+        assertThat(r.action().type()).isEqualTo("GO_TO_BUILDING");
+        assertThat(r.buildingId()).isEqualTo(r.action().buildingId());
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"hola", "Hola Coopi", "buenas tardes", "ey coopi", "necesito ayuda", "hola, buenos días"})
-    void reconoceSaludos(String saludo) {
-        RespuestaDTO r = preguntar(saludo);
-        assertThat(r.accion().tipo()).isEqualTo("SALUDO");
-        assertThat(r.respuesta()).startsWith("¡Hola!");
+    void recognizesGreetings(String greeting) {
+        AnswerDTO r = ask(greeting);
+        assertThat(r.action().type()).isEqualTo("GREETING");
+        assertThat(r.answer()).startsWith("¡Hola!");
     }
 
     @Test
-    void elSaludoUsaElNombreDelUsuario() {
-        assertThat(coopi.saludo(new Sesion(5, "  Juan   Moreno ", "ESTUDIANTE"))).startsWith("¡Hola, Juan!");
-        assertThat(coopi.saludo(new Sesion(5, "", "ESTUDIANTE"))).startsWith("¡Hola!");
-        assertThat(coopi.saludo(INVITADO)).startsWith("¡Hola!");
+    void greetingUsesTheUserName() {
+        assertThat(coopi.greeting(new Session(5, "  Juan   Moreno ", "STUDENT"))).startsWith("¡Hola, Juan!");
+        assertThat(coopi.greeting(new Session(5, "", "STUDENT"))).startsWith("¡Hola!");
+        assertThat(coopi.greeting(GUEST)).startsWith("¡Hola!");
     }
 
     @ParameterizedTest
     @ValueSource(strings = {"¿qué programas hay?", "cuáles carreras tienen", "quiero ver todos los programas", "oferta académica"})
-    void abreLaListaDeProgramas(String pregunta) {
-        assertThat(preguntar(pregunta).accion().tipo()).isEqualTo("VER_PROGRAMAS");
+    void opensTheProgramList(String question) {
+        assertThat(ask(question).action().type()).isEqualTo("SHOW_PROGRAMS");
     }
 
     @Test
-    void unaPreguntaConcretaNoNavegaSinoQueResponde() {
-        RespuestaDTO r = preguntar("¿cuánto dura el programa de medicina?");
-        assertThat(r.accion()).isNull();
-        assertThat(r.proveedor()).isEqualTo("local");
-        assertThat(r.respuesta()).isNotBlank();
+    void specificQuestionAnswersInsteadOfNavigating() {
+        AnswerDTO r = ask("¿cuánto dura el programa de medicina?");
+        assertThat(r.action()).isNull();
+        assertThat(r.provider()).isEqualTo("local");
+        assertThat(r.answer()).isNotBlank();
     }
 
     @Test
-    void lasPalabrasCortasNoCoincidenDentroDeOtras() {
-        // "amigos" contiene "ami" y "cafeteria" contiene "cafe", pero no son esos lugares
-        Consulta c = Consulta.de("vamos con mis amigos", null, INVITADO, null);
-        assertThat(c.contiene("ami")).isFalse();
-        assertThat(Consulta.de("la cafeteria", null, null, null).contiene("cafe")).isFalse();
-        assertThat(Consulta.de("los lockers", null, null, null).contiene("locker")).isTrue();
-        assertThat(Consulta.de("las canchas", null, null, null).contiene("cancha")).isTrue();
-        assertThat(Consulta.de("dos cafes", null, null, null).contiene("cafe")).isTrue();
+    void shortWordsDoNotMatchInsideOtherWords() {
+        // "amigos" contains "ami" and "cafeteria" contains "cafe", but they are not those places
+        Query c = Query.of("vamos con mis amigos", null, GUEST, null);
+        assertThat(c.contains("ami")).isFalse();
+        assertThat(Query.of("la cafeteria", null, null, null).contains("cafe")).isFalse();
+        assertThat(Query.of("los lockers", null, null, null).contains("locker")).isTrue();
+        assertThat(Query.of("las canchas", null, null, null).contains("cancha")).isTrue();
+        assertThat(Query.of("dos cafes", null, null, null).contains("cafe")).isTrue();
     }
 
     @Test
-    void laPalabraDeActivacionSeQuitaDelMensaje() {
-        assertThat(Consulta.de("Ey Coopi, ¿dónde queda la biblioteca?", null, null, null).normal())
+    void wakeWordIsRemovedFromTheMessage() {
+        assertThat(Query.of("Ey Coopi, ¿dónde queda la biblioteca?", null, null, null).normalized())
                 .isEqualTo("donde queda la biblioteca");
-        assertThat(Consulta.de("Oye Coopi llévame", null, null, null).normal()).isEqualTo("llevame");
+        assertThat(Query.of("Oye Coopi llévame", null, null, null).normalized()).isEqualTo("llevame");
     }
 }

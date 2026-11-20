@@ -1,7 +1,7 @@
 package co.edu.ucc.pasto3d;
 
-import co.edu.ucc.pasto3d.ia.*;
-import co.edu.ucc.pasto3d.seguridad.*;
+import co.edu.ucc.pasto3d.ai.*;
+import co.edu.ucc.pasto3d.security.*;
 import org.junit.jupiter.api.Test;
 
 import java.util.ArrayList;
@@ -10,105 +10,105 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import static org.assertj.core.api.Assertions.*;
 
-/** Pruebas unitarias de los patrones de diseño aplicados en el backend. */
-class PatronesTests {
+/** Unit tests of the design patterns applied in the backend. */
+class PatternsTests {
 
-    /** Proveedor falso que cuenta cuántas veces lo llaman y qué indicaciones recibe. */
-    static class ProveedorFalso implements ProveedorIA {
-        int llamadas = 0;
-        final List<String> indicaciones = new ArrayList<>();
-        public String nombre() { return "falso"; }
-        public boolean disponible() { return true; }
-        public String responder(String p, ContextoCampus c) { return responder(p, c, null); }
-        public String responder(String p, ContextoCampus c, String ind) { llamadas++; indicaciones.add(ind); return "**Respuesta** a " + p; }
+    /** Fake provider that counts how many times it is called and which hints it receives. */
+    static class FakeProvider implements AIProvider {
+        int calls = 0;
+        final List<String> hints = new ArrayList<>();
+        public String name() { return "fake"; }
+        public boolean available() { return true; }
+        public String answer(String p, CampusContext c) { return answer(p, c, null); }
+        public String answer(String p, CampusContext c, String hint) { calls++; hints.add(hint); return "**Answer** to " + p; }
     }
 
-    static final ContextoCampus VACIO = new ContextoCampus(List.of(), List.of(), List.of(), List.of());
+    static final CampusContext EMPTY = new CampusContext(List.of(), List.of(), List.of(), List.of());
 
     @Test
-    void singletonDevuelveSiempreLaMismaInstancia() {
-        assertThat(MetricasAsistente.instancia()).isSameAs(MetricasAsistente.instancia());
-        long antes = MetricasAsistente.instancia().preguntasDe("prueba-singleton");
-        MetricasAsistente.instancia().registrar("prueba-singleton", 10);
-        assertThat(MetricasAsistente.instancia().preguntasDe("prueba-singleton")).isEqualTo(antes + 1);
-    }
-
-    @Test
-    void prototypeClonaSinModificarElOriginal() {
-        PlantillaPrompt prototipo = new PlantillaPrompt("conocimiento del campus");
-        PlantillaPrompt copia = prototipo.copiar().agregar("perfil visitante");
-        assertThat(copia).isNotSameAs(prototipo);
-        assertThat(copia.tamano()).isEqualTo(2);
-        assertThat(prototipo.tamano()).isEqualTo(1);
-        assertThat(copia.texto()).contains("conocimiento del campus").contains("perfil visitante");
+    void singletonAlwaysReturnsTheSameInstance() {
+        assertThat(AssistantMetrics.instance()).isSameAs(AssistantMetrics.instance());
+        long before = AssistantMetrics.instance().questionsFrom("test-singleton");
+        AssistantMetrics.instance().register("test-singleton", 10);
+        assertThat(AssistantMetrics.instance().questionsFrom("test-singleton")).isEqualTo(before + 1);
     }
 
     @Test
-    void builderArmaElPromptPorPartes() {
-        String prompt = new ContextoPromptBuilder().instrucciones().edificios(VACIO).programas(VACIO).construir();
-        assertThat(prompt).contains("Coopi").contains("## Edificios").contains("## Programas");
+    void prototypeClonesWithoutChangingTheOriginal() {
+        PromptTemplate prototype = new PromptTemplate("campus knowledge");
+        PromptTemplate copy = prototype.copy().add("visitor profile");
+        assertThat(copy).isNotSameAs(prototype);
+        assertThat(copy.size()).isEqualTo(2);
+        assertThat(prototype.size()).isEqualTo(1);
+        assertThat(copy.text()).contains("campus knowledge").contains("visitor profile");
     }
 
     @Test
-    void abstractFactoryCreaProductosDeLaMismaFamilia() {
-        FabricaIA local = new FabricaLocal(new LocalProveedorIA());
-        assertThat(local.crearProveedor().nombre()).isEqualTo("local");
-        assertThat(local.crearFormateador()).isInstanceOf(FormateadorTextoPlano.class);
-        FabricaIA gemini = new FabricaGemini(new GeminiProveedorIA("", "gemini-3.5-flash"), 30);
-        assertThat(gemini.disponible()).isFalse();                         // sin API key
-        assertThat(gemini.crearFormateador()).isInstanceOf(FormateadorMarkdown.class);
-        assertThat(gemini.crearFormateador().formatear("**Hola**\n# Título\n- uno")).isEqualTo("Hola\nTítulo\n• uno");
+    void builderAssemblesThePromptStepByStep() {
+        String prompt = new PromptContextBuilder().instructions().buildings(EMPTY).programs(EMPTY).build();
+        assertThat(prompt).contains("Coopi").contains("## Campus buildings").contains("## Academic programs");
     }
 
     @Test
-    void factoryMethodCreaElTipoDeSesionCorrecto() {
-        TokenServicio tokens = new TokenServicio("secreto-de-prueba");
-        var invitado = new CreadorSesionInvitado().iniciar(tokens);
-        assertThat(invitado.rol()).isEqualTo("INVITADO");
-        assertThat(invitado.id()).isNull();
-        assertThat(tokens.validar(invitado.token())).get().extracting(Sesion::esInvitado).isEqualTo(true);
+    void abstractFactoryCreatesProductsOfTheSameFamily() {
+        AIFactory local = new LocalFactory(new LocalAIProvider());
+        assertThat(local.createProvider().name()).isEqualTo("local");
+        assertThat(local.createFormatter()).isInstanceOf(PlainTextFormatter.class);
+        AIFactory gemini = new GeminiFactory(new GeminiAIProvider("", "gemini-3.5-flash"), 30);
+        assertThat(gemini.available()).isFalse();                         // no API key
+        assertThat(gemini.createFormatter()).isInstanceOf(MarkdownFormatter.class);
+        assertThat(gemini.createFormatter().format("**Hola**\n# Título\n- uno")).isEqualTo("Hola\nTítulo\n• uno");
     }
 
     @Test
-    void decoratorConCacheEvitaLlamadasRepetidas() {
-        ProveedorFalso real = new ProveedorFalso();
-        ProveedorIA conCache = new ProveedorIAMedido(new ProveedorIAConCache(real, new ConcurrentHashMap<>()));
-        String a = conCache.responder("¿Dónde queda la biblioteca?", VACIO);
-        String b = conCache.responder("donde queda la BIBLIOTECA", VACIO);
+    void factoryMethodCreatesTheRightSessionType() {
+        TokenService tokens = new TokenService("test-secret");
+        var guest = new GuestSessionCreator().start(tokens);
+        assertThat(guest.role()).isEqualTo("GUEST");
+        assertThat(guest.id()).isNull();
+        assertThat(tokens.validate(guest.token())).get().extracting(Session::isGuest).isEqualTo(true);
+    }
+
+    @Test
+    void cacheDecoratorAvoidsRepeatedCalls() {
+        FakeProvider real = new FakeProvider();
+        AIProvider withCache = new TimedAIProvider(new CachedAIProvider(real, new ConcurrentHashMap<>()));
+        String a = withCache.answer("¿Dónde queda la biblioteca?", EMPTY);
+        String b = withCache.answer("donde queda la BIBLIOTECA", EMPTY);
         assertThat(a).isEqualTo(b);
-        assertThat(real.llamadas).isEqualTo(1);
-        assertThat(conCache.nombre()).isEqualTo("falso");
+        assertThat(real.calls).isEqualTo(1);
+        assertThat(withCache.name()).isEqualTo("fake");
     }
 
     @Test
-    void proxyRechazaCuandoSeAgotaLaCuota() {
-        ProveedorFalso real = new ProveedorFalso();
-        ProveedorIAProxy proxy = new ProveedorIAProxy(real, 2);
-        proxy.responder("uno", VACIO);
-        proxy.responder("dos", VACIO);
-        assertThatThrownBy(() -> proxy.responder("tres", VACIO)).isInstanceOf(ProveedorIAProxy.CuotaAgotadaException.class);
-        assertThat(real.llamadas).isEqualTo(2);                            // la tercera nunca llegó al real
+    void proxyRejectsWhenQuotaIsExhausted() {
+        FakeProvider real = new FakeProvider();
+        AIProviderProxy proxy = new AIProviderProxy(real, 2);
+        proxy.answer("one", EMPTY);
+        proxy.answer("two", EMPTY);
+        assertThatThrownBy(() -> proxy.answer("three", EMPTY)).isInstanceOf(AIProviderProxy.QuotaExceededException.class);
+        assertThat(real.calls).isEqualTo(2);                            // the third one never reached the real provider
     }
 
     @Test
-    void bridgeCombinaCualquierPerfilConCualquierProveedor() {
-        ProveedorFalso real = new ProveedorFalso();
-        PerfilAsistente visitante = PerfilAsistente.para(new Sesion(null, "Invitado", "INVITADO"), real);
-        PerfilAsistente estudiante = PerfilAsistente.para(new Sesion(7, "Laura Meza", "ESTUDIANTE"), real);
-        assertThat(visitante.tipo()).isEqualTo("visitante");
-        assertThat(estudiante.tipo()).isEqualTo("estudiante");
-        visitante.responder("hola", VACIO);
-        estudiante.responder("hola", VACIO);
-        assertThat(real.indicaciones.get(0)).contains("VISITANTE");
-        assertThat(real.indicaciones.get(1)).contains("Laura").contains("ESTUDIANTE");
-        // el mismo perfil funciona también con otro proveedor (la IA local)
-        assertThat(new PerfilVisitante(new LocalProveedorIA()).tipo()).isEqualTo("visitante");
+    void bridgeCombinesAnyProfileWithAnyProvider() {
+        FakeProvider real = new FakeProvider();
+        AssistantProfile visitor = AssistantProfile.forSession(new Session(null, "Invitado", "GUEST"), real);
+        AssistantProfile student = AssistantProfile.forSession(new Session(7, "Laura Meza", "STUDENT"), real);
+        assertThat(visitor.type()).isEqualTo("visitor");
+        assertThat(student.type()).isEqualTo("student");
+        visitor.answer("hola", EMPTY);
+        student.answer("hola", EMPTY);
+        assertThat(real.hints.get(0)).contains("VISITOR");
+        assertThat(real.hints.get(1)).contains("Laura").contains("STUDENT");
+        // the same profile also works with another provider (the local AI)
+        assertThat(new VisitorProfile(new LocalAIProvider()).type()).isEqualTo("visitor");
     }
 
     @Test
-    void adapterTraduceGeminiALaInterfazDelSistema() {
-        ProveedorIA adaptado = new GeminiProveedorIA("", "gemini-3.5-flash");
-        assertThat(adaptado.nombre()).isEqualTo("gemini");
-        assertThat(adaptado.disponible()).isFalse();
+    void adapterTranslatesGeminiToTheSystemInterface() {
+        AIProvider adapted = new GeminiAIProvider("", "gemini-3.5-flash");
+        assertThat(adapted.name()).isEqualTo("gemini");
+        assertThat(adapted.available()).isFalse();
     }
 }

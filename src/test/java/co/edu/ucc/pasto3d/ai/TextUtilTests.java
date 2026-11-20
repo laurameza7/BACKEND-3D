@@ -1,34 +1,34 @@
-package co.edu.ucc.pasto3d.ia;
+package co.edu.ucc.pasto3d.ai;
 
 import org.junit.jupiter.api.Test;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-class TextoUtilTests {
+class TextUtilTests {
 
     @Test
-    void normalizarQuitaTildesSignosYMayusculas() {
-        assertThat(TextoUtil.normalizar("¿Dónde queda la CAFETERÍA?")).isEqualTo("donde queda la cafeteria");
-        assertThat(TextoUtil.normalizar("Ey  Coopi,   llévame…")).isEqualTo("ey coopi llevame");
-        assertThat(TextoUtil.normalizar("Odontología – Bloque B")).isEqualTo("odontologia bloque b");
+    void normalizeRemovesAccentsSignsAndCapitals() {
+        assertThat(TextUtil.normalize("¿Dónde queda la CAFETERÍA?")).isEqualTo("donde queda la cafeteria");
+        assertThat(TextUtil.normalize("Ey  Coopi,   llévame…")).isEqualTo("ey coopi llevame");
+        assertThat(TextUtil.normalize("Odontología – Bloque B")).isEqualTo("odontologia bloque b");
     }
 
     @Test
-    void normalizarConservaLosNumerosYTrataLaEñeComoN() {
-        // "año" y "ano" se comparan igual: así da lo mismo si el teclado no tiene ñ
-        assertThat(TextoUtil.normalizar("Año 2026, salón 409")).isEqualTo("ano 2026 salon 409");
+    void normalizeKeepsNumbersAndTreatsEnyeAsN() {
+        // "año" and "ano" compare equal: it does not matter if the keyboard has no ñ
+        assertThat(TextUtil.normalize("Año 2026, salón 409")).isEqualTo("ano 2026 salon 409");
     }
 
     @Test
-    void normalizarToleraNuloYVacio() {
-        assertThat(TextoUtil.normalizar(null)).isEmpty();
-        assertThat(TextoUtil.normalizar("   ")).isEmpty();
+    void normalizeToleratesNullAndBlank() {
+        assertThat(TextUtil.normalize(null)).isEmpty();
+        assertThat(TextUtil.normalize("   ")).isEmpty();
     }
 
     @Test
-    void nombreDelPiso() {
-        assertThat(TextoUtil.nombrePiso(3)).isEqualTo("piso 3");
-        assertThat(TextoUtil.nombrePiso(-2)).isEqualTo("sótano 2");
-        assertThat(TextoUtil.nombrePiso(null)).isEqualTo("piso sin registrar");
+    void floorNameText() {
+        assertThat(TextUtil.floorName(3)).isEqualTo("piso 3");
+        assertThat(TextUtil.floorName(-2)).isEqualTo("sótano 2");
+        assertThat(TextUtil.floorName(null)).isEqualTo("piso sin registrar");
     }
 }

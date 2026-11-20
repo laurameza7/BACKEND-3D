@@ -1,4 +1,4 @@
-package co.edu.ucc.pasto3d.controlador;
+package co.edu.ucc.pasto3d.controller;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,8 +12,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.options;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-/** Rutas públicas de información del campus (no exigen sesión). */
-@SpringBootTest(properties = "ia.proveedor=local")
+/** Public routes with campus information (no session required). */
+@SpringBootTest(properties = "ai.provider=local")
 @ActiveProfiles("local")
 @AutoConfigureMockMvc
 class CampusApiTests {
@@ -21,96 +21,96 @@ class CampusApiTests {
     @Autowired MockMvc mvc;
 
     @Test
-    void listaLosEdificiosConSusMedidas() throws Exception {
-        mvc.perform(get("/api/edificios"))
+    void listsBuildingsWithTheirSize() throws Exception {
+        mvc.perform(get("/api/buildings"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", greaterThanOrEqualTo(5)))
-                .andExpect(jsonPath("$[?(@.codigo == 'A')].pisos", contains(greaterThan(0))))
-                .andExpect(jsonPath("$[?(@.codigo == 'B')].nombre", contains("Bloque B")))
-                .andExpect(jsonPath("$[0].ancho", greaterThan(0.0)));
+                .andExpect(jsonPath("$[?(@.code == 'A')].floors", contains(greaterThan(0))))
+                .andExpect(jsonPath("$[?(@.code == 'B')].name", contains("Bloque B")))
+                .andExpect(jsonPath("$[0].width", greaterThan(0.0)));
     }
 
     @Test
-    void listaTodosLosLugaresConSuEdificio() throws Exception {
-        mvc.perform(get("/api/lugares"))
+    void listsAllPlacesWithTheirBuilding() throws Exception {
+        mvc.perform(get("/api/places"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", greaterThanOrEqualTo(50)))
-                .andExpect(jsonPath("$[*].edificio", everyItem(notNullValue())))
-                .andExpect(jsonPath("$[*].nombre", hasItems("Biblioteca", "Gimnasio", "Auditorio Urcunina", "Tesorería")));
+                .andExpect(jsonPath("$[*].building", everyItem(notNullValue())))
+                .andExpect(jsonPath("$[*].name", hasItems("Biblioteca", "Gimnasio", "Auditorio Urcunina", "Tesorería")));
     }
 
     @Test
-    void lugaresDeUnEdificioOrdenadosPorPiso() throws Exception {
+    void placesOfABuildingSortedByFloor() throws Exception {
         String id = com.jayway.jsonpath.JsonPath.read(
-                mvc.perform(get("/api/edificios")).andReturn().getResponse().getContentAsString(),
-                "$[?(@.codigo == 'B')].id").toString().replaceAll("[\\[\\]]", "");
-        mvc.perform(get("/api/edificios/" + id + "/lugares"))
+                mvc.perform(get("/api/buildings")).andReturn().getResponse().getContentAsString(),
+                "$[?(@.code == 'B')].id").toString().replaceAll("[\\[\\]]", "");
+        mvc.perform(get("/api/buildings/" + id + "/places"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", greaterThan(10)))
-                .andExpect(jsonPath("$[0].piso", lessThan(0)))          // empieza por los sótanos
-                .andExpect(jsonPath("$[*].edificioId", everyItem(is(Integer.valueOf(id)))));
+                .andExpect(jsonPath("$[0].floor", lessThan(0)))          // basements come first
+                .andExpect(jsonPath("$[*].buildingId", everyItem(is(Integer.valueOf(id)))));
     }
 
     @Test
-    void unEdificioQueNoExisteNoTieneLugares() throws Exception {
-        mvc.perform(get("/api/edificios/99999/lugares"))
+    void unknownBuildingHasNoPlaces() throws Exception {
+        mvc.perform(get("/api/buildings/99999/places"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", is(0)));
     }
 
     @Test
-    void losProgramasTraenSuFacultadYUbicacion() throws Exception {
-        mvc.perform(get("/api/programas"))
+    void programsIncludeTheirFacultyAndLocation() throws Exception {
+        mvc.perform(get("/api/programs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", greaterThanOrEqualTo(15)))
-                .andExpect(jsonPath("$[?(@.nombre == 'Ingeniería de Software')].lugar", contains("Facultad de Ingeniería")))
-                .andExpect(jsonPath("$[?(@.nombre == 'Ingeniería de Software')].ubicacion", contains("Bloque B, piso 4")))
-                .andExpect(jsonPath("$[?(@.nivel == 'PREGRADO')]", hasSize(greaterThanOrEqualTo(6))));
+                .andExpect(jsonPath("$[?(@.name == 'Ingeniería de Software')].place", contains("Facultad de Ingeniería")))
+                .andExpect(jsonPath("$[?(@.name == 'Ingeniería de Software')].location", contains("Bloque B, piso 4")))
+                .andExpect(jsonPath("$[?(@.level == 'UNDERGRADUATE')]", hasSize(greaterThanOrEqualTo(6))));
     }
 
     @Test
-    void unProgramaPorIdYUnoQueNoExiste() throws Exception {
+    void programByIdAndUnknownProgram() throws Exception {
         String id = com.jayway.jsonpath.JsonPath.read(
-                mvc.perform(get("/api/programas")).andReturn().getResponse().getContentAsString(), "$[0].id").toString();
-        mvc.perform(get("/api/programas/" + id))
+                mvc.perform(get("/api/programs")).andReturn().getResponse().getContentAsString(), "$[0].id").toString();
+        mvc.perform(get("/api/programs/" + id))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id", is(Integer.valueOf(id))));
-        mvc.perform(get("/api/programas/99999"))
+        mvc.perform(get("/api/programs/99999"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error", is("No existe el programa 99999")));
-        mvc.perform(get("/api/programas/abc"))
+        mvc.perform(get("/api/programs/abc"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error", containsString("abc")));
     }
 
     @Test
-    void preguntasFrecuentesConCategoria() throws Exception {
-        mvc.perform(get("/api/preguntas-frecuentes"))
+    void faqsHaveACategory() throws Exception {
+        mvc.perform(get("/api/faqs"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()", greaterThan(0)))
-                .andExpect(jsonPath("$[*].categoria", everyItem(notNullValue())))
-                .andExpect(jsonPath("$[*].respuesta", everyItem(not(emptyString()))));
+                .andExpect(jsonPath("$[*].category", everyItem(notNullValue())))
+                .andExpect(jsonPath("$[*].answer", everyItem(not(emptyString()))));
     }
 
     @Test
-    void saludIncluyeLasMetricasDeCoopi() throws Exception {
-        mvc.perform(get("/api/salud"))
+    void healthIncludesCoopiMetrics() throws Exception {
+        mvc.perform(get("/api/health"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.estado", is("ok")))
-                .andExpect(jsonPath("$.metricasCoopi").exists())
-                .andExpect(jsonPath("$.fecha").isString());
+                .andExpect(jsonPath("$.status", is("ok")))
+                .andExpect(jsonPath("$.coopiMetrics").exists())
+                .andExpect(jsonPath("$.date").isString());
     }
 
     @Test
-    void rutaInexistenteResponde404EnJson() throws Exception {
-        mvc.perform(get("/api/no-existe"))
+    void unknownPathReturns404AsJson() throws Exception {
+        mvc.perform(get("/api/does-not-exist"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").isString());
     }
 
     @Test
-    void corsPermiteAlFrontendDeVercel() throws Exception {
-        mvc.perform(options("/api/asistente/preguntar")
+    void corsAllowsTheVercelFrontend() throws Exception {
+        mvc.perform(options("/api/assistant/ask")
                         .header("Origin", "https://ucc-pasto3d.vercel.app")
                         .header("Access-Control-Request-Method", "POST")
                         .header("Access-Control-Request-Headers", "authorization,content-type"))

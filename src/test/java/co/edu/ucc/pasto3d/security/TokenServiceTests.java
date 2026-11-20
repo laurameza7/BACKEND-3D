@@ -1,4 +1,4 @@
-package co.edu.ucc.pasto3d.seguridad;
+package co.edu.ucc.pasto3d.security;
 
 import org.junit.jupiter.api.Test;
 
@@ -7,64 +7,64 @@ import java.util.Base64;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Pruebas unitarias del token firmado (sin levantar Spring). */
-class TokenServicioTests {
+/** Unit tests of the signed token (without starting Spring). */
+class TokenServiceTests {
 
-    private final TokenServicio tokens = new TokenServicio("secreto-de-prueba");
+    private final TokenService tokens = new TokenService("test-secret");
 
     @Test
-    void unTokenEmitidoSeValidaYConservaLosDatos() {
-        String t = tokens.emitir(new Sesion(7, "Laura Meza", "ESTUDIANTE"));
-        Sesion s = tokens.validar(t).orElseThrow();
-        assertThat(s.usuarioId()).isEqualTo(7);
-        assertThat(s.nombre()).isEqualTo("Laura Meza");
-        assertThat(s.rol()).isEqualTo("ESTUDIANTE");
-        assertThat(s.esInvitado()).isFalse();
+    void issuedTokenIsValidAndKeepsTheData() {
+        String t = tokens.issue(new Session(7, "Laura Meza", "STUDENT"));
+        Session s = tokens.validate(t).orElseThrow();
+        assertThat(s.userId()).isEqualTo(7);
+        assertThat(s.name()).isEqualTo("Laura Meza");
+        assertThat(s.role()).isEqualTo("STUDENT");
+        assertThat(s.isGuest()).isFalse();
     }
 
     @Test
-    void elInvitadoNoTieneId() {
-        String t = tokens.emitir(new Sesion(null, "Invitado", "INVITADO"));
-        Sesion s = tokens.validar(t).orElseThrow();
-        assertThat(s.usuarioId()).isNull();
-        assertThat(s.esInvitado()).isTrue();
+    void guestHasNoId() {
+        String t = tokens.issue(new Session(null, "Invitado", "GUEST"));
+        Session s = tokens.validate(t).orElseThrow();
+        assertThat(s.userId()).isNull();
+        assertThat(s.isGuest()).isTrue();
     }
 
     @Test
-    void unTokenVencidoNoSirve() {
-        String t = tokens.emitir(new Sesion(1, "Juan", "ESTUDIANTE"), -10);
-        assertThat(tokens.validar(t)).isEmpty();
+    void expiredTokenIsRejected() {
+        String t = tokens.issue(new Session(1, "Juan", "STUDENT"), -10);
+        assertThat(tokens.validate(t)).isEmpty();
     }
 
     @Test
-    void unTokenFirmadoConOtroSecretoNoSirve() {
-        String ajeno = new TokenServicio("otro-secreto").emitir(new Sesion(1, "Manuel", "ESTUDIANTE"));
-        assertThat(tokens.validar(ajeno)).isEmpty();
+    void tokenSignedWithAnotherSecretIsRejected() {
+        String foreign = new TokenService("another-secret").issue(new Session(1, "Manuel", "STUDENT"));
+        assertThat(tokens.validate(foreign)).isEmpty();
     }
 
     @Test
-    void cambiarElContenidoInvalidaLaFirma() {
-        String t = tokens.emitir(new Sesion(2, "Juan", "ESTUDIANTE"));
-        String falso = Base64.getUrlEncoder().withoutPadding()
+    void changingTheContentInvalidatesTheSignature() {
+        String t = tokens.issue(new Session(2, "Juan", "STUDENT"));
+        String fake = Base64.getUrlEncoder().withoutPadding()
                 .encodeToString("1|Juan|ADMIN|9999999999".getBytes(StandardCharsets.UTF_8));
-        assertThat(tokens.validar(falso + t.substring(t.indexOf('.')))).isEmpty();
+        assertThat(tokens.validate(fake + t.substring(t.indexOf('.')))).isEmpty();
     }
 
     @Test
-    void tokensMalFormadosSeRechazanSinExcepciones() {
-        assertThat(tokens.validar(null)).isEmpty();
-        assertThat(tokens.validar("")).isEmpty();
-        assertThat(tokens.validar("sinpunto")).isEmpty();
-        assertThat(tokens.validar(".")).isEmpty();
-        assertThat(tokens.validar("abc.%%%")).isEmpty();
-        assertThat(tokens.validar("a.b.c")).isEmpty();
+    void malformedTokensAreRejectedWithoutExceptions() {
+        assertThat(tokens.validate(null)).isEmpty();
+        assertThat(tokens.validate("")).isEmpty();
+        assertThat(tokens.validate("nodot")).isEmpty();
+        assertThat(tokens.validate(".")).isEmpty();
+        assertThat(tokens.validate("abc.%%%")).isEmpty();
+        assertThat(tokens.validate("a.b.c")).isEmpty();
     }
 
     @Test
-    void laBarraVerticalDelNombreNoRompeElToken() {
-        String t = tokens.emitir(new Sesion(3, "Ana|ADMIN", "ESTUDIANTE"));
-        Sesion s = tokens.validar(t).orElseThrow();
-        assertThat(s.rol()).isEqualTo("ESTUDIANTE");
-        assertThat(s.nombre()).isEqualTo("Ana ADMIN");
+    void verticalBarInNameDoesNotBreakTheToken() {
+        String t = tokens.issue(new Session(3, "Ana|ADMIN", "STUDENT"));
+        Session s = tokens.validate(t).orElseThrow();
+        assertThat(s.role()).isEqualTo("STUDENT");
+        assertThat(s.name()).isEqualTo("Ana ADMIN");
     }
 }
