@@ -141,4 +141,15 @@ class IntentsTests {
         assertThat(r.action()).isNull();
         assertThat(r.answer()).isNotBlank();
     }
+
+    @Test
+    void sayingProgramaOrCarreraIsEnoughToOpenTheProgram() {
+        assertThat(ask("información del programa de derecho").action().type()).isEqualTo("GO_TO_PROGRAM");
+        assertThat(ask("háblame de la carrera de odontología").action().type()).isEqualTo("GO_TO_PROGRAM");
+    }
+
+    @Test
+    void askingForTheDegreeTitleIsAnsweredInsteadOfNavigating() {
+        assertThat(ask("¿qué título da el programa de derecho?").action()).isNull();
+    }
 }

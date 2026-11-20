@@ -38,7 +38,7 @@ public class ProgramsHandler implements IntentHandler {
         Optional<ProgramDTO> program = find(c.normalized(), c.context().programs());
         // "llévame a la facultad de medicina" asks for the faculty (a place), not for the program
         if (c.contains("facultad") && !c.contains("programa", "carrera")) return Optional.empty();
-        if (program.isEmpty() || !(c.asksToGo() || c.contains("program", "carrera"))) return Optional.empty();
+        if (program.isEmpty() || !(c.asksToGo() || c.contains("programa", "carrera"))) return Optional.empty();
         // "¿Cuánto dura Medicina?" without asking to go → the AI answers it with the full context.
         if (!c.asksToGo() && isSpecificQuestion(c)) return Optional.empty();
 
@@ -68,7 +68,7 @@ public class ProgramsHandler implements IntentHandler {
 
     private static boolean isSpecificQuestion(Query c) {
         return c.contains("cuanto", "cuantos", "costo", "precio", "valor", "requisitos", "como me inscribo",
-                "inscripcion", "duracion", "dura", "degree_title", "que se estudia", "materias", "pensum", "schedule");
+                "inscripcion", "duracion", "dura", "titulo", "que se estudia", "materias", "pensum", "schedule");
     }
 
     /** Finds the program named in the text: the one with more matching distinctive words wins. */
