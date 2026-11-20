@@ -2,6 +2,8 @@ package co.edu.ucc.pasto3d.servicio;
 
 import co.edu.ucc.pasto3d.dto.Dtos.*;
 import co.edu.ucc.pasto3d.ia.ContextoCampus;
+import co.edu.ucc.pasto3d.ia.FabricaIA;
+import co.edu.ucc.pasto3d.ia.PerfilAsistente;
 import co.edu.ucc.pasto3d.ia.ProveedorIA;
 import co.edu.ucc.pasto3d.ia.ProveedorIAFactory;
 import co.edu.ucc.pasto3d.intencion.Consulta;
@@ -98,9 +100,11 @@ public class AsistenteFacade {
 
         String respuesta = null;
         String usado = null;
-        for (ProveedorIA proveedor : fabrica.crearCadena()) {   // Cadena de respaldo
+        for (FabricaIA familia : fabrica.crearCadena()) {          // Cadena de respaldo: gemini → local
+            ProveedorIA proveedor = familia.crearProveedor();        // ABSTRACT FACTORY: proveedor…
+            PerfilAsistente perfil = PerfilAsistente.para(consulta.sesion(), proveedor);   // BRIDGE perfil × proveedor
             try {
-                respuesta = proveedor.responder(enviada, contexto);
+                respuesta = familia.crearFormateador().formatear(perfil.responder(enviada, contexto));  // …y su formateador
                 usado = proveedor.nombre();
                 break;
             } catch (Exception e) {
