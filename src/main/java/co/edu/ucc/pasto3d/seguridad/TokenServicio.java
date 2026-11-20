@@ -27,7 +27,12 @@ public class TokenServicio {
     }
 
     public String emitir(Sesion s) {
-        long vence = Instant.now().getEpochSecond() + DURACION_SEGUNDOS;
+        return emitir(s, DURACION_SEGUNDOS);
+    }
+
+    /** Permite emitir tokens con otra duración (las pruebas usan una negativa para simular un token vencido). */
+    String emitir(Sesion s, long duracionSegundos) {
+        long vence = Instant.now().getEpochSecond() + duracionSegundos;
         String contenido = (s.usuarioId() == null ? "" : s.usuarioId()) + "|" + limpio(s.nombre()) + "|" + s.rol() + "|" + vence;
         String c64 = b64(contenido.getBytes(StandardCharsets.UTF_8));
         return c64 + "." + b64(firmar(c64));
@@ -42,10 +47,14 @@ public class TokenServicio {
         catch (IllegalArgumentException e) { return Optional.empty(); }
         if (!MessageDigest.isEqual(esperada, recibida)) return Optional.empty();
 
-        String[] c = new String(Base64.getUrlDecoder().decode(partes[0]), StandardCharsets.UTF_8).split("\\|", -1);
-        if (c.length != 4 || Long.parseLong(c[3]) < Instant.now().getEpochSecond()) return Optional.empty();
-        Integer id = c[0].isEmpty() ? null : Integer.valueOf(c[0]);
-        return Optional.of(new Sesion(id, c[1], c[2]));
+        try {
+            String[] c = new String(Base64.getUrlDecoder().decode(partes[0]), StandardCharsets.UTF_8).split("\\|", -1);
+            if (c.length != 4 || Long.parseLong(c[3]) < Instant.now().getEpochSecond()) return Optional.empty();
+            Integer id = c[0].isEmpty() ? null : Integer.valueOf(c[0]);
+            return Optional.of(new Sesion(id, c[1], c[2]));
+        } catch (IllegalArgumentException e) {            // contenido mal formado (incluye NumberFormatException)
+            return Optional.empty();
+        }
     }
 
     private byte[] firmar(String texto) {
