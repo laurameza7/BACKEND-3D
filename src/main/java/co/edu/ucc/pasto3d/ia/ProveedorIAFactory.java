@@ -6,30 +6,26 @@ import org.springframework.stereotype.Component;
 import java.util.List;
 
 /**
- * Patrón FACTORY: decide qué estrategia de IA usar según la configuración
- * (variable IA_PROVEEDOR) y la disponibilidad de cada proveedor.
- * Devuelve la cadena en orden de preferencia: el primero que falle cede al siguiente.
+ * Elige qué familias de IA (ABSTRACT FACTORY) usar según la configuración (IA_PROVEEDOR)
+ * y la disponibilidad, en orden de preferencia: si la primera falla, responde la siguiente.
  */
 @Component
 public class ProveedorIAFactory {
 
-    private final GeminiProveedorIA gemini;
-    private final LocalProveedorIA local;
+    private final FabricaGemini gemini;
+    private final FabricaLocal local;
     private final String preferido;
 
-    public ProveedorIAFactory(GeminiProveedorIA gemini, LocalProveedorIA local,
+    public ProveedorIAFactory(FabricaGemini gemini, FabricaLocal local,
                               @Value("${ia.proveedor:gemini}") String preferido) {
         this.gemini = gemini;
         this.local = local;
         this.preferido = preferido;
     }
 
-    public List<ProveedorIA> crearCadena() {
+    public List<FabricaIA> crearCadena() {
         if ("gemini".equalsIgnoreCase(preferido) && gemini.disponible())
             return List.of(gemini, local);
         return List.of(local);
     }
 }
-
-
-
