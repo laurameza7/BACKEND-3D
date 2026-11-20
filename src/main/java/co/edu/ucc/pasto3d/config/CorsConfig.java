@@ -1,24 +1,38 @@
 package co.edu.ucc.pasto3d.config;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import org.springframework.core.Ordered;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
-/** Lets the frontend (deployed on another domain) call the API. */
+import java.util.Arrays;
+import java.util.List;
+
+/**
+ * Lets the frontend (deployed on another domain) call the API.
+ * It is a filter (and not only an MVC mapping) so that every response carries the CORS headers,
+ * including errors such as 404 or 405; otherwise the browser hides the error message from the frontend.
+ */
 @Configuration
-public class CorsConfig implements WebMvcConfigurer {
+public class CorsConfig {
 
-    @Value("${app.cors.origins:*}")
-    private String origins;
+    @Bean
+    public FilterRegistrationBean<CorsFilter> corsFilter(@Value("${app.cors.origins:*}") String origins) {
+        CorsConfiguration config = new CorsConfiguration();
+        config.setAllowedOriginPatterns(Arrays.stream(origins.split(",")).map(String::trim).filter(o -> !o.isEmpty()).toList());
+        config.setAllowedMethods(List.of("GET", "POST", "OPTIONS"));
+        config.setAllowedHeaders(List.of("*"));
+        config.setMaxAge(3600L);
 
-    @Override
-    public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/api/**")
-                .allowedOriginPatterns(origins.split(","))
-                .allowedMethods("GET", "POST", "OPTIONS");
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/api/**", config);
+
+        FilterRegistrationBean<CorsFilter> bean = new FilterRegistrationBean<>(new CorsFilter(source));
+        bean.setOrder(Ordered.HIGHEST_PRECEDENCE);
+        return bean;
     }
 }
-
-
-

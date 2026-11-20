@@ -117,4 +117,15 @@ class CampusApiTests {
                 .andExpect(status().isOk())
                 .andExpect(header().string("Access-Control-Allow-Origin", "https://ucc-pasto3d.vercel.app"));
     }
+
+    @Test
+    void errorsAlsoCarryTheCorsHeaders() throws Exception {
+        mvc.perform(get("/api/auth/login").header("Origin", "https://ucc-pasto3d.vercel.app"))
+                .andExpect(status().isMethodNotAllowed())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://ucc-pasto3d.vercel.app"))
+                .andExpect(jsonPath("$.error", is("Esta ruta no acepta GET.")));
+        mvc.perform(get("/api/programs/99999").header("Origin", "https://ucc-pasto3d.vercel.app"))
+                .andExpect(status().isNotFound())
+                .andExpect(header().string("Access-Control-Allow-Origin", "https://ucc-pasto3d.vercel.app"));
+    }
 }
